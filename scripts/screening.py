@@ -1,39 +1,40 @@
 """
 Screening payload for daily VN market dashboard.
 
-This file is sent verbatim to the MCP `execute_python` tool, which runs it
-against MSSQL/MongoDB and returns the `result` dict as JSON.
-
-Screen rule (user-defined):
+Screen rule:
     price > EMA20 > EMA50  AND  RS(stock vs VNINDEX) > MA50(RS)
-    + liquidity filter: 20d avg turnover > 1bn VND
-
-Output also includes market-overview context (VNINDEX level, breadth, sectors).
+    + liquidity filter: 20d avg turnover > 5bn VND
+    Universe: all HOSE / HNX / UPCOM tickers in Market_Data
+    RS benchmark: VNINDEX (applies to all exchanges)
 """
 
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
 
 LOOKBACK_START = "2025-10-01"
-LIQUIDITY_MIN_VND = 15_000_000_000   # 15 bn VND ADTV filter
+LIQUIDITY_MIN_VND = 5_000_000_000   # 5 bn VND — covers liquid HNX/UPCOM stocks
 TOP_N = 40
 
+# MUST be first sql_query call
 idx = sql_query(
     f"SELECT TRADINGDATE, CLOSEINDEX, INDEXCHANGE, PERCENTINDEXCHANGE "
     f"FROM MarketIndex WHERE COMGROUPCODE='VNINDEX' AND TRADINGDATE >= '{LOOKBACK_START}'"
 )
 
+# Join Sector_Map to get VNI flag (Y = HOSE VN-Index constituent, null = HNX/UPCOM/non-VNI)
 df = sql_query(f"""
-    SELECT TICKER, TRADE_DATE, PX_LAST, VOLUME, MKT_CAP
-    FROM Market_Data
-    WHERE TRADE_DATE >= '{LOOKBACK_START}'
-      AND PX_LAST IS NOT NULL AND PX_LAST > 0 AND VOLUME > 0
+    SELECT md.TICKER, md.TRADE_DATE, md.PX_LAST, md.VOLUME, md.MKT_CAP,
+           sm.VNI
+    FROM Market_Data md
+    LEFT JOIN Sector_Map sm ON md.TICKER = sm.Ticker
+    WHERE md.TRADE_DATE >= '{LOOKBACK_START}'
+      AND md.PX_LAST IS NOT NULL AND md.PX_LAST > 0 AND md.VOLUME > 0
 """)
 
 idx = idx.rename(columns={"TRADINGDATE": "TRADE_DATE", "CLOSEINDEX": "IDX_CLOSE"})
 idx["TRADE_DATE"] = pd.to_datetime(idx["TRADE_DATE"]).dt.normalize()
 df["TRADE_DATE"] = pd.to_datetime(df["TRADE_DATE"])
+df["VNI"] = df["VNI"].fillna("").str.strip()
 
 df = df.sort_values(["TICKER", "TRADE_DATE"])
 df["TURNOVER"] = df["PX_LAST"] * df["VOLUME"]
@@ -54,6 +55,9 @@ df["PRICE_PCT_1D"] = g["PX_LAST"].transform(lambda x: x.pct_change() * 100)
 latest = df["TRADE_DATE"].max()
 last = df[df["TRADE_DATE"] == latest].copy()
 
+# Drop duplicate tickers (from LEFT JOIN producing multiple rows if Sector_Map has dupes)
+last = last.sort_values("VNI", ascending=False).drop_duplicates(subset="TICKER")
+
 mask = (
     (last["PX_LAST"] > last["EMA20"])
     & (last["EMA20"] > last["EMA50"])
@@ -62,31 +66,21 @@ mask = (
 )
 passed = last[mask].copy()
 passed["rs_strength_pct"] = (passed["RS"] / passed["RS_MA50"] - 1) * 100
-passed["ema20_gap_pct"] = (passed["PX_LAST"] / passed["EMA20"] - 1) * 100
-passed["ema50_gap_pct"] = (passed["PX_LAST"] / passed["EMA50"] - 1) * 100
+passed["ema20_gap_pct"]   = (passed["PX_LAST"] / passed["EMA20"] - 1) * 100
+passed["ema50_gap_pct"]   = (passed["PX_LAST"] / passed["EMA50"] - 1) * 100
 passed["turnover_bn_vnd"] = passed["TURNOVER_MA20"] / 1e9
 passed = passed.sort_values("rs_strength_pct", ascending=False)
 
-sector_map_df = sql_query("SELECT Ticker, L2 FROM Sector_Map WHERE L2 IS NOT NULL AND L2 != ''")
-ticker_by_sector = {}
-for _, row in sector_map_df.iterrows():
-    l2 = str(row["L2"])
-    ticker_by_sector.setdefault(l2, []).append(str(row["Ticker"]))
-
 vni_latest = idx.sort_values("TRADE_DATE").iloc[-1]
-vni_prev = idx.sort_values("TRADE_DATE").iloc[-2]
+vni_prev   = idx.sort_values("TRADE_DATE").iloc[-2]
 
 screened = passed.head(TOP_N)[
     [
-        "TICKER",
-        "PX_LAST",
-        "PRICE_PCT_1D",
-        "EMA20",
-        "EMA50",
-        "ema20_gap_pct",
-        "ema50_gap_pct",
-        "rs_strength_pct",
-        "turnover_bn_vnd",
+        "TICKER", "VNI",
+        "PX_LAST", "PRICE_PCT_1D",
+        "EMA20", "EMA50",
+        "ema20_gap_pct", "ema50_gap_pct",
+        "rs_strength_pct", "turnover_bn_vnd",
         "MKT_CAP",
     ]
 ].round(2).to_dict("records")
@@ -109,5 +103,4 @@ result = {
         "min_turnover_vnd": LIQUIDITY_MIN_VND,
     },
     "screened": screened,
-    "sector_ticker_map": ticker_by_sector,
 }

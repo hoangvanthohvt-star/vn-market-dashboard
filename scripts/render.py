@@ -59,9 +59,14 @@ def render_screened_rows(rows):
         chg = r.get("PRICE_PCT_1D")
         cls = "pos-t" if chg and float(chg) > 0 else ("neg-t" if chg and float(chg) < 0 else "")
         rs  = r.get("rs_strength_pct", 0)
+        vni = r.get("VNI", "")
+        if vni == "Y":
+            exch_tag = "<span style='font-size:9px;font-weight:600;color:#173F35;background:rgba(0,191,111,0.12);padding:1px 5px;border-radius:4px;margin-left:4px;'>VNI</span>"
+        else:
+            exch_tag = "<span style='font-size:9px;font-weight:600;color:#97999B;background:#eee;padding:1px 5px;border-radius:4px;margin-left:4px;'>HNX/UP</span>"
         out.append(
             f"<tr>"
-            f"<td class='fw ticker-link'>{r['TICKER']}</td>"
+            f"<td class='fw ticker-link'>{r['TICKER']}{exch_tag}</td>"
             f"<td class='tr'>{fmt(r['PX_LAST'])}</td>"
             f"<td class='tr {cls}'>{fmt_pct(chg, sign=True)}</td>"
             f"<td class='tr'>{fmt(r['EMA20'])}</td>"
