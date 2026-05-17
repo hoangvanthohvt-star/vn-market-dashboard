@@ -195,6 +195,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap" style="height:320px;"><canvas id="nhnlChart"></canvas></div>
 </div>
 
+<!-- ══ BREADTH CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Breadth — % of VNI Stocks Above MA50</h2>
+    <div id="breadthRangebtns" style="display:flex;gap:6px;">
+      <button onclick="setBreadthRange(1)" id="breadthBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setBreadthRange(2)" id="breadthBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setBreadthRange(3)" id="breadthBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="breadthChart"></canvas></div>
+</div>
+
 <!-- ══ DIVERGENCE CHECKLIST ══ -->
 <div class="section">
   <h2>Divergence Checklist — {{latest_date}}</h2>
@@ -370,6 +383,56 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     nhnlChart = makeChart(dates, nhnl, vni);
     ['1Y','2Y','3Y'].forEach(k => {
       const btn = document.getElementById('nhnlBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const B = {{breadth_chart_json}};
+  if(!B||!B.dates) return;
+  const ctx = document.getElementById('breadthChart').getContext('2d');
+
+  function makeChart(dates, breadth, vni) {
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'Breadth % > MA50', data:breadth, borderColor:'#014ABD', backgroundColor:'rgba(1,74,189,0.08)', fill:true, tension:0.3, pointRadius:0, borderWidth:2, yAxisID:'y', order:2},
+          {type:'line', label:'VNIndex (right)', data:vni, borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:1}
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.dataset.yAxisID==='y' ? c.parsed.y.toFixed(1)+'%' : c.parsed.y.toFixed(0));}}}
+        },
+        scales:{
+          y:{position:'left', min:0, max:100, title:{display:true, text:'% > MA50', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}, callback:v=>v+'%'}},
+          y1:{position:'right', title:{display:true, text:'VNIndex', font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  let breadthChart = makeChart(B.dates, B.breadth_pct, B.vnindex);
+
+  window.setBreadthRange = function(years) {
+    const start = Math.max(0, B.dates.length - years * TDY);
+    breadthChart.destroy();
+    breadthChart = makeChart(B.dates.slice(start), B.breadth_pct.slice(start), B.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('breadthBtn'+k);
       const active = k === years+'Y';
       btn.style.background = active ? '#173F35' : '#fff';
       btn.style.color = active ? '#fff' : '';
