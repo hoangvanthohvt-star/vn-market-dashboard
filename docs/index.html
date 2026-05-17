@@ -142,7 +142,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="header-top">
     <div>
       <h1>Market Regime</h1>
-      <div class="subtitle">Breadth · Regime · Screener · generated 2026-05-17 21:45 ICT</div>
+      <div class="subtitle">Breadth · Regime · Screener · generated 2026-05-17 21:49 ICT</div>
     </div>
     <div class="header-right">
       <div class="date-badge">2026-05-15</div>
@@ -195,9 +195,9 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
     <h2 style="margin:0;">VNIndex vs New High–New Low (15d Rolling · VNI Universe)</h2>
     <div id="nhnlRangebtns" style="display:flex;gap:6px;">
-      <button onclick="setNhnlRange(1)" id="nhnlBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setNhnlRange(1)" id="nhnlBtn1Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
       <button onclick="setNhnlRange(2)" id="nhnlBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setNhnlRange(3)" id="nhnlBtn3Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+      <button onclick="setNhnlRange(3)" id="nhnlBtn3Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
     </div>
   </div>
   <div class="chart-wrap" style="height:320px;"><canvas id="nhnlChart"></canvas></div>
@@ -452,7 +452,8 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 
   // Approximate trading days per year
   const TDY = 250;
-  let nhnlChart = makeChart(N.dates, N.nhnl_15d, N.vnindex);
+  const start1Y = Math.max(0, N.dates.length - TDY);
+  let nhnlChart = makeChart(N.dates.slice(start1Y), N.nhnl_15d.slice(start1Y), N.vnindex.slice(start1Y));
 
   window.setNhnlRange = function(years) {
     const n = years * TDY;

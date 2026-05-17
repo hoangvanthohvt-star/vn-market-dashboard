@@ -184,7 +184,14 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 
 <!-- ══ NHNL CHART ══ -->
 <div class="section">
-  <h2>VNIndex vs New High–New Low (15d Rolling · VNI Universe)</h2>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs New High–New Low (15d Rolling · VNI Universe)</h2>
+    <div id="nhnlRangebtns" style="display:flex;gap:6px;">
+      <button onclick="setNhnlRange(1)" id="nhnlBtn1Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setNhnlRange(2)" id="nhnlBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setNhnlRange(3)" id="nhnlBtn3Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
   <div class="chart-wrap" style="height:320px;"><canvas id="nhnlChart"></canvas></div>
 </div>
 
@@ -333,58 +340,54 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   const N = {{nhnl_chart_json}};
   if(!N||!N.dates) return;
   const ctx = document.getElementById('nhnlChart').getContext('2d');
-  const colors = N.nhnl_15d.map(v => v >= 0 ? 'rgba(0,191,111,0.75)' : 'rgba(255,0,55,0.75)');
-  new Chart(ctx, {
-    data: {
-      labels: N.dates,
-      datasets: [
-        {
-          type: 'bar',
-          label: 'NHNL 15d',
-          data: N.nhnl_15d,
-          backgroundColor: colors,
-          borderWidth: 0,
-          yAxisID: 'y',
-          order: 2,
-        },
-        {
-          type: 'line',
-          label: 'VNIndex (right)',
-          data: N.vnindex,
-          borderColor: '#173F35',
-          backgroundColor: 'transparent',
-          borderWidth: 2.5,
-          pointRadius: 0,
-          tension: 0.3,
-          yAxisID: 'y1',
-          order: 1,
-        }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: {mode:'index', intersect:false},
-      plugins: {
-        legend: {position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
-        tooltip: {backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'}}
+
+  function makeChart(dates, nhnl, vni) {
+    const colors = nhnl.map(v => v >= 0 ? 'rgba(0,191,111,0.75)' : 'rgba(255,0,55,0.75)');
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'bar', label:'NHNL 15d', data:nhnl, backgroundColor:colors, borderWidth:0, yAxisID:'y', order:2},
+          {type:'line', label:'VNIndex (right)', data:vni, borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:1}
+        ]
       },
-      scales: {
-        y: {
-          position: 'left',
-          title: {display:true, text:'NHNL 15d', font:{family:'Manrope',size:11}},
-          grid: {color:'rgba(0,0,0,0.04)'},
-          ticks: {font:{family:'Manrope',size:11}},
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'}}
         },
-        y1: {
-          position: 'right',
-          title: {display:true, text:'VNIndex', font:{family:'Manrope',size:11}},
-          grid: {drawOnChartArea:false},
-          ticks: {font:{family:'Manrope',size:11}},
-        },
-        x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        scales:{
+          y:{position:'left', title:{display:true, text:'NHNL 15d', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
+          y1:{position:'right', title:{display:true, text:'VNIndex', font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
       }
-    }
-  });
+    });
+  }
+
+  // Approximate trading days per year
+  const TDY = 250;
+  const start1Y = Math.max(0, N.dates.length - TDY);
+  let nhnlChart = makeChart(N.dates.slice(start1Y), N.nhnl_15d.slice(start1Y), N.vnindex.slice(start1Y));
+
+  window.setNhnlRange = function(years) {
+    const n = years * TDY;
+    const start = Math.max(0, N.dates.length - n);
+    const dates = N.dates.slice(start);
+    const nhnl  = N.nhnl_15d.slice(start);
+    const vni   = N.vnindex.slice(start);
+    nhnlChart.destroy();
+    nhnlChart = makeChart(dates, nhnl, vni);
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('nhnlBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
 })();
 </script>
 </body>
