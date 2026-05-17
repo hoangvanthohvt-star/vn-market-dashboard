@@ -98,7 +98,7 @@ def render_screened_rows(rows):
             f"<td class='tr pos-t'>{fmt_pct(ema_gap, sign=True)}</td>"
             f"<td class='tr pos-t'>{fmt_pct(rs, sign=True)}</td>"
             f"<td class='tr'>{fmt(r.get('turnover_bn_vnd'), 1)}</td>"
-            f"<td>{sector}</td>"
+            f"<td class='fw'>{sector}</td>"
             f"</tr>"
         )
     return "\n".join(out)
