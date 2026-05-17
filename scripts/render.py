@@ -91,7 +91,8 @@ def render_screened_rows(rows):
         sector = _TICKER_SECTOR.get(r["TICKER"], "")
         out.append(
             f"<tr>"
-            f"<td class='fw ticker-link'>{r['TICKER']}<span style='font-weight:400;color:#97999B;margin-left:6px;'>{sector}</span></td>"
+            f"<td class='fw ticker-link'>{r['TICKER']}</td>"
+            f"<td class='fw'>{sector}</td>"
             f"<td class='tr'>{fmt(r['PX_LAST'])}</td>"
             f"<td class='tr {cls}'>{fmt_pct(chg, sign=True)}</td>"
             f"<td class='tr pos-t'>{fmt_pct(g20, sign=True)}</td>"
