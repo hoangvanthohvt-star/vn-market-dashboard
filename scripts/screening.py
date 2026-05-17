@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 
 LOOKBACK_START = "2025-10-01"
-LIQUIDITY_MIN_VND = 5_000_000_000   # 5 bn VND — covers liquid HNX/UPCOM stocks
+LIQUIDITY_MIN_VND = 15_000_000_000  # 15 bn VND
 TOP_N = 40
 
 # MUST be first sql_query call

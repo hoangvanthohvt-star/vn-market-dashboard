@@ -7,13 +7,13 @@
   },
   "universe": {
     "total_tickers": 633,
-    "liquid_passed": 20
+    "liquid_passed": 17
   },
   "screen_rules": {
     "price_gt_ema20": true,
     "ema20_gt_ema50": true,
     "rs_gt_rs_ma50": true,
-    "min_turnover_vnd": 5000000000
+    "min_turnover_vnd": 15000000000
   },
   "breadth": {
     "ma20_pct": 37.0,
@@ -440,19 +440,6 @@
       "MKT_CAP": 77258825.94
     },
     {
-      "TICKER": "TCO",
-      "VNI": "Y",
-      "PX_LAST": 15500,
-      "PRICE_PCT_1D": -2.52,
-      "EMA20": 14988.05,
-      "EMA50": 13488.64,
-      "ema20_gap_pct": 3.42,
-      "ema50_gap_pct": 14.91,
-      "rs_strength_pct": 9.35,
-      "turnover_bn_vnd": 6.24,
-      "MKT_CAP": 485469.64
-    },
-    {
       "TICKER": "HNG",
       "VNI": "",
       "PX_LAST": 7600,
@@ -503,19 +490,6 @@
       "rs_strength_pct": 5.64,
       "turnover_bn_vnd": 22.43,
       "MKT_CAP": 9661092.82
-    },
-    {
-      "TICKER": "DRI",
-      "VNI": "",
-      "PX_LAST": 15100,
-      "PRICE_PCT_1D": 2.03,
-      "EMA20": 14016.72,
-      "EMA50": 13496.93,
-      "ema20_gap_pct": 7.73,
-      "ema50_gap_pct": 11.88,
-      "rs_strength_pct": 4.49,
-      "turnover_bn_vnd": 11.8,
-      "MKT_CAP": 1105320
     },
     {
       "TICKER": "NVL",
@@ -594,19 +568,6 @@
       "rs_strength_pct": 1.05,
       "turnover_bn_vnd": 17.08,
       "MKT_CAP": 1250710.26
-    },
-    {
-      "TICKER": "TVN",
-      "VNI": "",
-      "PX_LAST": 9400,
-      "PRICE_PCT_1D": 3.3,
-      "EMA20": 8841.6,
-      "EMA50": 8645.01,
-      "ema20_gap_pct": 6.32,
-      "ema50_gap_pct": 8.73,
-      "rs_strength_pct": 1.04,
-      "turnover_bn_vnd": 5.17,
-      "MKT_CAP": 6373200
     },
     {
       "TICKER": "DXG",
