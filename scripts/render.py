@@ -532,8 +532,9 @@ def main():
         "{{exec_warnings}}":         render_warnings(regime),
         # Metric cards
         "{{regime_metric_cards}}":   render_metric_cards(regime),
-        # Chart
+        # Charts
         "{{chart_json}}":            chart_json,
+        "{{nhnl_chart_json}}":       json.dumps(snapshot.get("nhnl_chart", {})),
         # Divergence checklist
         "{{regime_div5d_rows}}":         render_div_direction_rows(d5),
         "{{regime_div5d_verdict_class}}": v5_cls,

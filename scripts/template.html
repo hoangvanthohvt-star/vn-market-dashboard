@@ -182,6 +182,12 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
 </div>
 
+<!-- ══ NHNL CHART ══ -->
+<div class="section">
+  <h2>VNIndex vs New High–New Low (15d Rolling · VNI Universe)</h2>
+  <div class="chart-wrap" style="height:320px;"><canvas id="nhnlChart"></canvas></div>
+</div>
+
 <!-- ══ DIVERGENCE CHECKLIST ══ -->
 <div class="section">
   <h2>Divergence Checklist — {{latest_date}}</h2>
@@ -316,6 +322,66 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
         y:{position:'left',title:{display:true,text:'RSI / Breadth / NHNL',font:{family:'Manrope',size:11}},min:10,max:80,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{family:'Manrope',size:11}}},
         y1:{position:'right',title:{display:true,text:'VNIndex',font:{family:'Manrope',size:11}},grid:{drawOnChartArea:false},ticks:{font:{family:'Manrope',size:11}}},
         x:{ticks:{font:{family:'Manrope',size:10},maxRotation:45},grid:{display:false}}
+      }
+    }
+  });
+})();
+</script>
+
+<script>
+(function(){
+  const N = {{nhnl_chart_json}};
+  if(!N||!N.dates) return;
+  const ctx = document.getElementById('nhnlChart').getContext('2d');
+  const colors = N.nhnl_15d.map(v => v >= 0 ? 'rgba(0,191,111,0.75)' : 'rgba(255,0,55,0.75)');
+  new Chart(ctx, {
+    data: {
+      labels: N.dates,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'NHNL 15d',
+          data: N.nhnl_15d,
+          backgroundColor: colors,
+          borderWidth: 0,
+          yAxisID: 'y',
+          order: 2,
+        },
+        {
+          type: 'line',
+          label: 'VNIndex (right)',
+          data: N.vnindex,
+          borderColor: '#173F35',
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          tension: 0.3,
+          yAxisID: 'y1',
+          order: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: {mode:'index', intersect:false},
+      plugins: {
+        legend: {position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+        tooltip: {backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'}}
+      },
+      scales: {
+        y: {
+          position: 'left',
+          title: {display:true, text:'NHNL 15d', font:{family:'Manrope',size:11}},
+          grid: {color:'rgba(0,0,0,0.04)'},
+          ticks: {font:{family:'Manrope',size:11}},
+        },
+        y1: {
+          position: 'right',
+          title: {display:true, text:'VNIndex', font:{family:'Manrope',size:11}},
+          grid: {drawOnChartArea:false},
+          ticks: {font:{family:'Manrope',size:11}},
+        },
+        x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
       }
     }
   });
