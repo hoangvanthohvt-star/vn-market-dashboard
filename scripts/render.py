@@ -74,6 +74,34 @@ def render_screened_rows(rows):
     return "\n".join(out)
 
 
+def render_sector_analysis_rows(rows):
+    out = []
+    for r in rows:
+        s     = r.get("strength", 0)
+        chg   = r.get("strength_10d_chg")
+        brd   = r.get("breadth_pct")
+        tickers = r.get("tickers", [])
+
+        s_cls   = "pos-t" if s > 55 else ("warn-t" if s >= 45 else "neg-t")
+        chg_cls = ("pos-t" if chg and chg > 0 else ("neg-t" if chg and chg < 0 else "")) if chg is not None else ""
+        brd_cls = "pos-t" if brd and brd >= 60 else ("warn-t" if brd and brd >= 40 else "neg-t")
+
+        chg_str = f"{chg:+.1f}" if chg is not None else "—"
+        brd_str = f"{brd:.0f}%" if brd is not None else "—"
+        ticker_str = " · ".join(tickers)
+
+        out.append(
+            f"<tr>"
+            f"<td class='fw'>{r['sector']}</td>"
+            f"<td class='tr {s_cls}'>{s:.1f}</td>"
+            f"<td class='tr {chg_cls}'>{chg_str}</td>"
+            f"<td class='tr {brd_cls}'>{brd_str}</td>"
+            f"<td style='font-size:11px;color:#555;'>{ticker_str}</td>"
+            f"</tr>"
+        )
+    return "\n".join(out) if out else "<tr><td colspan='5' style='color:#999;text-align:center;'>No data</td></tr>"
+
+
 SUPABASE_TO_LABEL = {
     "NganHang": "Banking", "CK": "Brokerage", "BaoHiem": "Insurance",
     "DauKhi": "Energy", "KimLoai": "Metals", "HoaChatVLXD": "Chemicals",
@@ -491,8 +519,9 @@ def main():
         "{{regime_scenario_cards}}": render_scenario_cards(regime.get("scenarios", [])),
         "{{regime_phase_rows}}":     render_phase_rows(regime.get("phases", [])),
         # Tables
-        "{{screened_rows}}":  render_screened_rows(snapshot.get("screened", [])),
-        "{{sector_rows}}":    render_sector_rows(sectors),
+        "{{screened_rows}}":        render_screened_rows(snapshot.get("screened", [])),
+        "{{sector_analysis_rows}}": render_sector_analysis_rows(snapshot.get("sector_analysis", [])),
+        "{{sector_rows}}":          render_sector_rows(sectors),
     }
 
     html = tmpl

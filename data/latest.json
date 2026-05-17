@@ -919,5 +919,263 @@
         "divergence": "Dir 5d: N | 10d: Y | Gap +20.4"
       }
     ]
-  }
+  },
+  "sector_analysis": [
+    {
+      "sector": "VinGroup",
+      "strength": 60.6,
+      "strength_10d_chg": -0.1,
+      "breadth_pct": 100.0,
+      "tickers": [
+        "VIC",
+        "VHM",
+        "VRE",
+        "VPL"
+      ]
+    },
+    {
+      "sector": "Rubber",
+      "strength": 57.9,
+      "strength_10d_chg": 5.5,
+      "breadth_pct": 80.0,
+      "tickers": [
+        "DPR",
+        "DRI",
+        "GVR",
+        "PHR",
+        "SIP"
+      ]
+    },
+    {
+      "sector": "GEX Family",
+      "strength": 55.5,
+      "strength_10d_chg": 8.5,
+      "breadth_pct": 60.0,
+      "tickers": [
+        "EVF",
+        "GEE",
+        "GEL",
+        "GEX",
+        "VIX"
+      ]
+    },
+    {
+      "sector": "Oil & Gas",
+      "strength": 53.4,
+      "strength_10d_chg": 8.9,
+      "breadth_pct": 57.1,
+      "tickers": [
+        "BSR",
+        "GAS",
+        "OIL",
+        "PLX",
+        "PVD",
+        "PVS",
+        "PVT"
+      ]
+    },
+    {
+      "sector": "Transport",
+      "strength": 52.2,
+      "strength_10d_chg": 2.5,
+      "breadth_pct": 75.0,
+      "tickers": [
+        "GMD",
+        "HAH",
+        "PHP",
+        "VOS"
+      ]
+    },
+    {
+      "sector": "Banking",
+      "strength": 52.0,
+      "strength_10d_chg": 2.1,
+      "breadth_pct": 66.7,
+      "tickers": [
+        "ACB",
+        "BID",
+        "CTG",
+        "HDB",
+        "MBB",
+        "MSB",
+        "SHB",
+        "STB",
+        "TCB",
+        "TPB",
+        "VCB",
+        "VPB"
+      ]
+    },
+    {
+      "sector": "Real Estate",
+      "strength": 49.8,
+      "strength_10d_chg": -3.1,
+      "breadth_pct": 80.0,
+      "tickers": [
+        "CEO",
+        "CII",
+        "DIG",
+        "DXG",
+        "HDC",
+        "KDH",
+        "NLG",
+        "NVL",
+        "PDR",
+        "TCH"
+      ]
+    },
+    {
+      "sector": "Consumer",
+      "strength": 49.2,
+      "strength_10d_chg": 3.5,
+      "breadth_pct": 50.0,
+      "tickers": [
+        "MSN",
+        "QNS",
+        "SBT",
+        "VNM"
+      ]
+    },
+    {
+      "sector": "Securities",
+      "strength": 48.3,
+      "strength_10d_chg": 2.1,
+      "breadth_pct": 35.7,
+      "tickers": [
+        "BSI",
+        "CTS",
+        "FTS",
+        "HCM",
+        "MBS",
+        "SHS",
+        "SSI",
+        "TCX",
+        "VCI",
+        "VCK",
+        "VDS",
+        "VIX",
+        "VND",
+        "VPX"
+      ]
+    },
+    {
+      "sector": "Fertilizer",
+      "strength": 47.0,
+      "strength_10d_chg": 0.0,
+      "breadth_pct": 16.7,
+      "tickers": [
+        "BFC",
+        "CSV",
+        "DCM",
+        "DGC",
+        "DPM",
+        "LAS"
+      ]
+    },
+    {
+      "sector": "Retail",
+      "strength": 46.1,
+      "strength_10d_chg": -2.5,
+      "breadth_pct": 20.0,
+      "tickers": [
+        "DGW",
+        "FRT",
+        "MWG",
+        "PET",
+        "PNJ"
+      ]
+    },
+    {
+      "sector": "Industrial Park",
+      "strength": 46.0,
+      "strength_10d_chg": -0.5,
+      "breadth_pct": 0.0,
+      "tickers": [
+        "KBC",
+        "IDC",
+        "BCM",
+        "VGC"
+      ]
+    },
+    {
+      "sector": "Steel",
+      "strength": 46.0,
+      "strength_10d_chg": -4.9,
+      "breadth_pct": 20.0,
+      "tickers": [
+        "HPG",
+        "HSG",
+        "NKG",
+        "SMC",
+        "VGS"
+      ]
+    },
+    {
+      "sector": "Construction",
+      "strength": 45.8,
+      "strength_10d_chg": -3.9,
+      "breadth_pct": 16.7,
+      "tickers": [
+        "CTD",
+        "FCN",
+        "HBC",
+        "HHV",
+        "LCG",
+        "VCG"
+      ]
+    },
+    {
+      "sector": "Tech",
+      "strength": 45.8,
+      "strength_10d_chg": 0.5,
+      "breadth_pct": 33.3,
+      "tickers": [
+        "CMG",
+        "CTR",
+        "FOX",
+        "FPT",
+        "VGI",
+        "VTP"
+      ]
+    },
+    {
+      "sector": "Textile",
+      "strength": 43.6,
+      "strength_10d_chg": -2.3,
+      "breadth_pct": 0.0,
+      "tickers": [
+        "GIL",
+        "MSH",
+        "TCM",
+        "TNG",
+        "VGT"
+      ]
+    },
+    {
+      "sector": "Electricity",
+      "strength": 42.6,
+      "strength_10d_chg": 0.3,
+      "breadth_pct": 14.3,
+      "tickers": [
+        "GEG",
+        "NT2",
+        "PC1",
+        "POW",
+        "PPC",
+        "REE",
+        "TV2"
+      ]
+    },
+    {
+      "sector": "Fishery",
+      "strength": 42.4,
+      "strength_10d_chg": -4.2,
+      "breadth_pct": 0.0,
+      "tickers": [
+        "ANV",
+        "IDI",
+        "VHC"
+      ]
+    }
+  ]
 }
