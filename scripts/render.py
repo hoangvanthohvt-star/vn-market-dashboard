@@ -126,7 +126,7 @@ def render_sector_analysis_rows(rows):
             f"<td class='tr {s_cls}'>{s:.1f}</td>"
             f"<td class='tr {chg_cls}'>{chg_str}</td>"
             f"<td class='tr {brd_cls}'>{brd_str}</td>"
-            f"<td style='font-size:11px;color:#555;'>{ticker_str}</td>"
+            f"<td>{ticker_str}</td>"
             f"</tr>"
         )
     return "\n".join(out) if out else "<tr><td colspan='5' style='color:#999;text-align:center;'>No data</td></tr>"
