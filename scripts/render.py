@@ -477,7 +477,6 @@ def main():
     universe  = snapshot["universe"]
     breadth   = snapshot.get("breadth", {})
     sectors   = snapshot.get("sectors", [])
-    sentiment = snapshot.get("sentiment", {})
     regime    = snapshot.get("regime", {})
 
     # Divergence detail

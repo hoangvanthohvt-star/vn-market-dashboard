@@ -20,10 +20,6 @@
     "ma50_pct": 42.2,
     "ma100_pct": 32.5
   },
-  "sentiment": {
-    "label": "NEUTRAL",
-    "summary": "1 bullish, 1 mixed, 4 neutral across 6 groups. Money rotating into Oil & Gas and BDS-KCN; VN-Index targeting 2,000; leading stocks showing possible hidden distribution."
-  },
   "sectors": [
     {
       "sector": "DauKhi",
