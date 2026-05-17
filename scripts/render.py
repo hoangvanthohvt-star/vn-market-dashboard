@@ -74,17 +74,113 @@ def render_screened_rows(rows):
     return "\n".join(out)
 
 
+SUPABASE_TO_LABEL = {
+    "NganHang": "Banking", "CK": "Brokerage", "BaoHiem": "Insurance",
+    "DauKhi": "Energy", "KimLoai": "Metals", "HoaChatVLXD": "Chemicals",
+    "VatLieu": "Other Materials", "BDS": "Residential", "BDSKN": "IP",
+    "XayDung": "Industrials", "VanTai": "Transportation", "DienNuoc": "Utilities",
+    "CongNghe": "IT", "VienThong": "Telecom & Media", "TieuDung": "Consumer Staples",
+    "BanLe": "Retailing", "HangTieuDung": "Consumer Durables",
+    "Vingroup": "Conglomerate", "Gelex": "Conglomerate",
+}
+
+SUPABASE_TO_LABEL_SHORT = {
+    "NganHang": "Banking", "CK": "Brokerage", "ChungKhoan": "Brokerage",
+    "BaoHiem": "Insurance", "DauKhi": "Oil & Gas", "KimLoai": "Metals",
+    "Thep": "Steel", "HoaChatVLXD": "Chemicals", "PhanBon": "Fertilizer",
+    "VatLieu": "Materials", "BDS": "Real Estate", "BDS_KCN": "Ind. Park",
+    "XayDung": "Construction", "VLXD": "Const. Mat.", "VanTai": "Transport",
+    "Dien": "Power", "CongNghe": "Technology", "VietTel": "Telecom",
+    "ThucPham": "Food", "BanLe": "Retail", "ThuySan": "Seafood",
+    "DetMay": "Textile", "HangKhong": "Aviation", "CaoSu": "Rubber",
+    "VinGroup": "VinGroup", "Gelex": "Gelex",
+}
+
+def render_overview_cards(regime, sectors, screened):
+    # Card 1 — Allocation
+    alloc = regime.get("allocation", "—") if regime else "—"
+    regime_name = regime.get("regime_name", "—") if regime else "—"
+    div = regime.get("divergence", {}) if regime else {}
+    sev = div.get("severity", "None")
+    alloc_color = "#00BF6F" if int(alloc) >= 70 else ("#FF671B" if int(alloc) >= 40 else "#FF0037") if str(alloc).isdigit() else "#97999B"
+    card1 = (
+        f"<div class='ov-card'>"
+        f"<div class='ov-label'>Allocation Recommendation</div>"
+        f"<div class='ov-value' style='color:{alloc_color};'>{alloc}%</div>"
+        f"<div class='ov-meta'>{regime_name}"
+        f"{' · ' + sev if sev and sev != 'None' else ''}</div>"
+        f"</div>"
+    )
+
+    # Card 2 — Top 3 strongest sectors by MFI
+    top3 = sorted(sectors, key=lambda x: x.get("mfi", 0), reverse=True)[:3]
+    rows2 = []
+    for s in top3:
+        label = SUPABASE_TO_LABEL_SHORT.get(s["sector"], s["sector"])
+        mfi = s.get("mfi", 0)
+        chg10 = s.get("mfi_change_10d")
+        mfi_cls = "pos-t" if mfi > 55 else ("warn-t" if mfi > 45 else "neg-t")
+        chg10_str = f'<span style="font-size:10px;color:{"#00BF6F" if chg10 and chg10>0 else "#FF0037"};">{chg10:+.1f} 10d</span>' if chg10 is not None else ""
+        rows2.append(
+            f"<div style='display:flex;justify-content:space-between;align-items:center;"
+            f"padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'>"
+            f"<span style='font-weight:600;'>{label}</span>"
+            f"<span><span class='{mfi_cls}' style='font-weight:700;margin-right:6px;'>{mfi:.1f}</span>{chg10_str}</span>"
+            f"</div>"
+        )
+    card2 = (
+        f"<div class='ov-card'>"
+        f"<div class='ov-label'>Top 3 Strongest Sectors</div>"
+        f"<div style='margin-top:8px;'>{''.join(rows2)}</div>"
+        f"</div>"
+    )
+
+    # Card 3 — Top 5 RS stocks
+    top5 = sorted(screened, key=lambda x: x.get("rs_strength_pct", 0), reverse=True)[:5]
+    rows3 = []
+    for r in top5:
+        chg = r.get("PRICE_PCT_1D", 0) or 0
+        rs = r.get("rs_strength_pct", 0)
+        chg_cls = "#00BF6F" if chg > 0 else "#FF0037"
+        rows3.append(
+            f"<div style='display:flex;justify-content:space-between;align-items:center;"
+            f"padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'>"
+            f"<span style='font-weight:700;color:#173F35;'>{r['TICKER']}</span>"
+            f"<span>"
+            f"<span style='color:#00BF6F;font-weight:700;margin-right:8px;'>RS {rs:+.1f}%</span>"
+            f"<span style='color:{chg_cls};'>{chg:+.1f}%</span>"
+            f"</span>"
+            f"</div>"
+        )
+    card3 = (
+        f"<div class='ov-card'>"
+        f"<div class='ov-label'>Top 5 RS Stocks</div>"
+        f"<div style='margin-top:8px;'>{''.join(rows3)}</div>"
+        f"</div>"
+    )
+
+    return card1 + "\n" + card2 + "\n" + card3
+
+
 def render_sector_rows(rows):
     out = []
     for r in rows:
-        mfi = r.get("mfi")
-        chg = r.get("mfi_change", 0)
-        cls = "pos-t" if mfi and mfi > 50 else ("neg-t" if mfi and mfi < 50 else "")
-        cc  = "pos-t" if chg and chg > 0 else ("neg-t" if chg and chg < 0 else "")
+        mfi   = r.get("mfi")
+        chg   = r.get("mfi_change", 0)
+        chg10 = r.get("mfi_change_10d")
+        raw   = r.get("sector", "")
+        label = SUPABASE_TO_LABEL.get(raw, raw)
+        tickers = r.get("tickers", [])
+        cls  = "pos-t" if mfi and mfi > 50 else ("neg-t" if mfi and mfi < 50 else "")
+        cc   = "pos-t" if chg and chg > 0 else ("neg-t" if chg and chg < 0 else "")
+        cc10 = "pos-t" if chg10 and chg10 > 0 else ("neg-t" if chg10 and chg10 < 0 else "")
+        ticker_str = " · ".join(tickers[:10]) if tickers else "—"
         out.append(
-            f"<tr><td>{r['sector']}</td>"
+            f"<tr><td class='fw'>{label}</td>"
             f"<td class='tr {cls}'>{fmt(mfi, 1)}</td>"
-            f"<td class='tr {cc}'>{fmt_pct(chg, 1, sign=True)}</td></tr>"
+            f"<td class='tr {cc}'>{fmt_pct(chg, 1, sign=True)}</td>"
+            f"<td class='tr {cc10}'>{fmt_pct(chg10, 1, sign=True) if chg10 is not None else '—'}</td>"
+            f"<td style='font-size:11px;color:#555;'>{ticker_str}</td></tr>"
         )
     return "\n".join(out)
 
@@ -362,15 +458,8 @@ def main():
         "{{vni_change}}":      fmt(vni["change"], 2),
         "{{vni_change_pct}}":  fmt_pct(vni["change_pct"], 2, sign=True),
         "{{vni_color}}":       color(vni["change"]),
-        # Overview
-        "{{universe_total}}":  fmt(universe["total_tickers"]),
-        "{{passed_count}}":    fmt(universe["liquid_passed"]),
-        "{{ma20_pct}}":        fmt_pct(breadth.get("ma20_pct"), 1),
-        "{{ma50_pct}}":        fmt_pct(breadth.get("ma50_pct"), 1),
-        "{{ma100_pct}}":       fmt_pct(breadth.get("ma100_pct"), 1),
-        "{{sentiment_summary}}": sentiment.get("summary", "—"),
-        "{{sentiment_label}}":   sentiment.get("label", "—"),
-        "{{sentiment_class}}":   sentiment.get("label", "").lower(),
+        # Overview cards
+        "{{overview_cards}}": render_overview_cards(regime, sectors, snapshot.get("screened", [])),
         # Exec summary
         "{{regime_name}}":          regime.get("regime_name", "—"),
         "{{regime_div_flag}}":       div_flag,

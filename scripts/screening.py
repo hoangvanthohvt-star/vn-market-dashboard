@@ -16,7 +16,7 @@ import numpy as np
 from datetime import datetime, timedelta
 
 LOOKBACK_START = "2025-10-01"
-LIQUIDITY_MIN_VND = 1_000_000_000
+LIQUIDITY_MIN_VND = 15_000_000_000   # 15 bn VND ADTV filter
 TOP_N = 40
 
 idx = sql_query(
@@ -67,6 +67,12 @@ passed["ema50_gap_pct"] = (passed["PX_LAST"] / passed["EMA50"] - 1) * 100
 passed["turnover_bn_vnd"] = passed["TURNOVER_MA20"] / 1e9
 passed = passed.sort_values("rs_strength_pct", ascending=False)
 
+sector_map_df = sql_query("SELECT Ticker, L2 FROM Sector_Map WHERE L2 IS NOT NULL AND L2 != ''")
+ticker_by_sector = {}
+for _, row in sector_map_df.iterrows():
+    l2 = str(row["L2"])
+    ticker_by_sector.setdefault(l2, []).append(str(row["Ticker"]))
+
 vni_latest = idx.sort_values("TRADE_DATE").iloc[-1]
 vni_prev = idx.sort_values("TRADE_DATE").iloc[-2]
 
@@ -103,4 +109,5 @@ result = {
         "min_turnover_vnd": LIQUIDITY_MIN_VND,
     },
     "screened": screened,
+    "sector_ticker_map": ticker_by_sector,
 }
