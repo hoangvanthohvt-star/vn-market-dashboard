@@ -148,7 +148,7 @@ def render_overview_cards(regime, screened, sector_analysis=None):
         f"</div>"
     )
 
-    # Card 2 — Top 3 from sector_analysis (RSI28 strength)
+    # Card 2 — Top 3 from sector_analysis (RSI14 strength)
     top3_src = sorted(sector_analysis or [], key=lambda x: x.get("strength", 0), reverse=True)[:3]
     rows2 = []
     for s in top3_src:
@@ -165,7 +165,7 @@ def render_overview_cards(regime, screened, sector_analysis=None):
         )
     card2 = (
         f"<div class='ov-card'>"
-        f"<div class='ov-label'>Top 3 Strongest Sectors · RSI28</div>"
+        f"<div class='ov-label'>Top 3 Strongest Sectors · RSI14</div>"
         f"<div style='margin-top:8px;'>{''.join(rows2) if rows2 else '<span style=\"color:#999\">—</span>'}</div>"
         f"</div>"
     )
