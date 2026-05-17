@@ -132,29 +132,7 @@ def render_sector_analysis_rows(rows):
     return "\n".join(out) if out else "<tr><td colspan='5' style='color:#999;text-align:center;'>No data</td></tr>"
 
 
-SUPABASE_TO_LABEL = {
-    "NganHang": "Banking", "CK": "Brokerage", "BaoHiem": "Insurance",
-    "DauKhi": "Energy", "KimLoai": "Metals", "HoaChatVLXD": "Chemicals",
-    "VatLieu": "Other Materials", "BDS": "Residential", "BDSKN": "IP",
-    "XayDung": "Industrials", "VanTai": "Transportation", "DienNuoc": "Utilities",
-    "CongNghe": "IT", "VienThong": "Telecom & Media", "TieuDung": "Consumer Staples",
-    "BanLe": "Retailing", "HangTieuDung": "Consumer Durables",
-    "Vingroup": "Conglomerate", "Gelex": "Conglomerate",
-}
-
-SUPABASE_TO_LABEL_SHORT = {
-    "NganHang": "Banking", "CK": "Brokerage", "ChungKhoan": "Brokerage",
-    "BaoHiem": "Insurance", "DauKhi": "Oil & Gas", "KimLoai": "Metals",
-    "Thep": "Steel", "HoaChatVLXD": "Chemicals", "PhanBon": "Fertilizer",
-    "VatLieu": "Materials", "BDS": "Real Estate", "BDS_KCN": "Ind. Park",
-    "XayDung": "Construction", "VLXD": "Const. Mat.", "VanTai": "Transport",
-    "Dien": "Power", "CongNghe": "Technology", "VietTel": "Telecom",
-    "ThucPham": "Food", "BanLe": "Retail", "ThuySan": "Seafood",
-    "DetMay": "Textile", "HangKhong": "Aviation", "CaoSu": "Rubber",
-    "VinGroup": "VinGroup", "Gelex": "Gelex",
-}
-
-def render_overview_cards(regime, sectors, screened, sector_analysis=None):
+def render_overview_cards(regime, screened, sector_analysis=None):
     # Card 1 — Allocation
     alloc = regime.get("allocation", "—") if regime else "—"
     regime_name = regime.get("regime_name", "—") if regime else "—"
@@ -217,29 +195,6 @@ def render_overview_cards(regime, sectors, screened, sector_analysis=None):
     )
 
     return card1 + "\n" + card2 + "\n" + card3
-
-
-def render_sector_rows(rows):
-    out = []
-    for r in rows:
-        mfi   = r.get("mfi")
-        chg   = r.get("mfi_change", 0)
-        chg10 = r.get("mfi_change_10d")
-        raw   = r.get("sector", "")
-        label = SUPABASE_TO_LABEL.get(raw, raw)
-        tickers = r.get("tickers", [])
-        cls  = "pos-t" if mfi and mfi > 50 else ("neg-t" if mfi and mfi < 50 else "")
-        cc   = "pos-t" if chg and chg > 0 else ("neg-t" if chg and chg < 0 else "")
-        cc10 = "pos-t" if chg10 and chg10 > 0 else ("neg-t" if chg10 and chg10 < 0 else "")
-        ticker_str = " · ".join(tickers[:10]) if tickers else "—"
-        out.append(
-            f"<tr><td class='fw'>{label}</td>"
-            f"<td class='tr {cls}'>{fmt(mfi, 1)}</td>"
-            f"<td class='tr {cc}'>{fmt_pct(chg, 1, sign=True)}</td>"
-            f"<td class='tr {cc10}'>{fmt_pct(chg10, 1, sign=True) if chg10 is not None else '—'}</td>"
-            f"<td style='font-size:11px;color:#555;'>{ticker_str}</td></tr>"
-        )
-    return "\n".join(out)
 
 
 # ---------------------------------------------------------------------------
@@ -476,7 +431,6 @@ def main():
     vni       = snapshot["vnindex"]
     universe  = snapshot["universe"]
     breadth   = snapshot.get("breadth", {})
-    sectors   = snapshot.get("sectors", [])
     regime    = snapshot.get("regime", {})
 
     # Divergence detail
@@ -515,7 +469,7 @@ def main():
         "{{vni_change_pct}}":  fmt_pct(vni["change_pct"], 2, sign=True),
         "{{vni_color}}":       color(vni["change"]),
         # Overview cards
-        "{{overview_cards}}": render_overview_cards(regime, sectors, snapshot.get("screened", []), snapshot.get("sector_analysis", [])),
+        "{{overview_cards}}": render_overview_cards(regime, snapshot.get("screened", []), snapshot.get("sector_analysis", [])),
         # Exec summary
         "{{regime_name}}":          regime.get("regime_name", "—"),
         "{{regime_div_flag}}":       div_flag,
@@ -551,7 +505,6 @@ def main():
         # Tables
         "{{screened_rows}}":        render_screened_rows(snapshot.get("screened", [])),
         "{{sector_analysis_rows}}": render_sector_analysis_rows(snapshot.get("sector_analysis", [])),
-        "{{sector_rows}}":          render_sector_rows(sectors),
     }
 
     html = tmpl
