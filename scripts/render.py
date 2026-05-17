@@ -53,22 +53,52 @@ def pos_neg(x):
 # Market Overview — screened & sector rows (DC style)
 # ---------------------------------------------------------------------------
 
+_SECTOR_TICKERS = {
+    "Banking":        ["ACB","BID","CTG","HDB","MBB","MSB","SHB","STB","TCB","TPB","VCB","VPB"],
+    "Real Estate":    ["CEO","CII","DIG","DXG","HDC","KDH","NLG","NVL","PDR","TCH"],
+    "Industrial Park":["KBC","IDC","BCM","VGC"],
+    "Steel":          ["HPG","HSG","NKG","SMC","VGS"],
+    "Retail":         ["DGW","FRT","MWG","PET","PNJ"],
+    "Fertilizer":     ["BFC","CSV","DCM","DGC","DPM","LAS"],
+    "Oil & Gas":      ["BSR","GAS","OIL","PLX","PVD","PVS","PVT"],
+    "Construction":   ["CTD","FCN","HBC","HHV","LCG","VCG"],
+    "Securities":     ["BSI","CTS","FTS","HCM","MBS","SHS","SSI","TCX","VCI","VCK","VDS","VIX","VND","VPX"],
+    "Consumer":       ["MSN","QNS","SBT","VNM"],
+    "VinGroup":       ["VIC","VHM","VRE","VPL"],
+    "GEX Family":     ["EVF","GEE","GEL","GEX","VIX"],
+    "Tech":           ["CMG","CTR","FOX","FPT","VGI","VTP"],
+    "Transport":      ["GMD","HAH","PHP","VOS"],
+    "Textile":        ["GIL","MSH","TCM","TNG","VGT"],
+    "Rubber":         ["DPR","DRI","GVR","PHR","SIP"],
+    "Fishery":        ["ANV","IDI","VHC"],
+    "Electricity":    ["GEG","NT2","PC1","POW","PPC","REE","TV2"],
+}
+_TICKER_SECTOR = {t: s for s, tickers in _SECTOR_TICKERS.items() for t in tickers}
+
 def render_screened_rows(rows):
     out = []
     for r in rows:
-        chg = r.get("PRICE_PCT_1D")
-        cls = "pos-t" if chg and float(chg) > 0 else ("neg-t" if chg and float(chg) < 0 else "")
-        rs  = r.get("rs_strength_pct", 0)
+        chg  = r.get("PRICE_PCT_1D")
+        cls  = "pos-t" if chg and float(chg) > 0 else ("neg-t" if chg and float(chg) < 0 else "")
+        rs   = r.get("rs_strength_pct", 0)
+        g20  = r.get("ema20_gap_pct")
+        g50  = r.get("ema50_gap_pct")
+        # EMA20 vs EMA50: derived from (1+g50/100)/(1+g20/100) - 1
+        if g20 is not None and g50 is not None:
+            ema_gap = ((1 + g50 / 100) / (1 + g20 / 100) - 1) * 100
+        else:
+            ema_gap = None
+        sector = _TICKER_SECTOR.get(r["TICKER"], "")
         out.append(
             f"<tr>"
             f"<td class='fw ticker-link'>{r['TICKER']}</td>"
             f"<td class='tr'>{fmt(r['PX_LAST'])}</td>"
             f"<td class='tr {cls}'>{fmt_pct(chg, sign=True)}</td>"
-            f"<td class='tr'>{fmt(r['EMA20'])}</td>"
-            f"<td class='tr'>{fmt(r['EMA50'])}</td>"
+            f"<td class='tr pos-t'>{fmt_pct(g20, sign=True)}</td>"
+            f"<td class='tr pos-t'>{fmt_pct(ema_gap, sign=True)}</td>"
             f"<td class='tr pos-t'>{fmt_pct(rs, sign=True)}</td>"
-            f"<td class='tr {cls}'>{fmt_pct(r.get('ema20_gap_pct'), sign=True)}</td>"
             f"<td class='tr'>{fmt(r.get('turnover_bn_vnd'), 1)}</td>"
+            f"<td style='font-size:11px;color:#555;'>{sector}</td>"
             f"</tr>"
         )
     return "\n".join(out)
