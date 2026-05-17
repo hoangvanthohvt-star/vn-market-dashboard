@@ -73,6 +73,21 @@ def render_screened_rows(rows):
     return "\n".join(html)
 
 
+def render_scenario_cards(scenarios):
+    html = []
+    for s in scenarios:
+        html.append(
+            f"<div class='scenario-card'>"
+            f"<div class='scenario-prob'>{s['probability']}%</div>"
+            f"<div class='scenario-name'>{s['name']}</div>"
+            f"<div class='scenario-row'>✓ <span>{s.get('confirmation','—')}</span></div>"
+            f"<div class='scenario-row'>✗ <span>{s.get('invalidation','—')}</span></div>"
+            f"<div class='scenario-row'>Alloc <span>{s.get('allocation','—')}%</span></div>"
+            f"</div>"
+        )
+    return "\n".join(html)
+
+
 def render_sector_rows(rows):
     html = []
     for r in rows:
@@ -97,25 +112,59 @@ def main():
     breadth = snapshot.get("breadth", {})
     sectors = snapshot.get("sectors", [])
     sentiment = snapshot.get("sentiment", {})
+    regime = snapshot.get("regime", {})
+
+    # Regime helpers
+    div = regime.get("divergence", {})
+    div_flag = regime.get("divergence_flag", "—")
+    div_class = "aligned"
+    if "Bearish" in div_flag:  div_class = "bearish"
+    elif "Bullish" in div_flag: div_class = "bullish"
+    gap = div.get("gap", 0)
+    gap_class = "gap-bearish" if gap > 12 else ("gap-bullish" if gap < -12 else "")
+    ind = regime.get("indicators", {})
+    cls = regime.get("classifications", {})
 
     html = tmpl
     replacements = {
-        "{{latest_date}}": snapshot["latest_date"],
-        "{{generated_at}}": datetime.now().strftime("%Y-%m-%d %H:%M ICT"),
-        "{{vni_close}}": fmt_num(vni["close"], 2),
-        "{{vni_change}}": fmt_num(vni["change"], 2),
-        "{{vni_change_pct}}": fmt_pct(vni["change_pct"]),
-        "{{vni_color}}": color_class(vni["change"]),
-        "{{universe_total}}": fmt_num(universe["total_tickers"]),
-        "{{passed_count}}": fmt_num(universe["liquid_passed"]),
-        "{{ma20_pct}}": fmt_pct(breadth.get("ma20_pct"), 1),
-        "{{ma50_pct}}": fmt_pct(breadth.get("ma50_pct"), 1),
-        "{{ma100_pct}}": fmt_pct(breadth.get("ma100_pct"), 1),
+        "{{latest_date}}":     snapshot["latest_date"],
+        "{{generated_at}}":    datetime.now().strftime("%Y-%m-%d %H:%M ICT"),
+        "{{vni_close}}":       fmt_num(vni["close"], 2),
+        "{{vni_change}}":      fmt_num(vni["change"], 2),
+        "{{vni_change_pct}}":  fmt_pct(vni["change_pct"]),
+        "{{vni_color}}":       color_class(vni["change"]),
+        "{{universe_total}}":  fmt_num(universe["total_tickers"]),
+        "{{passed_count}}":    fmt_num(universe["liquid_passed"]),
+        "{{ma20_pct}}":        fmt_pct(breadth.get("ma20_pct"), 1),
+        "{{ma50_pct}}":        fmt_pct(breadth.get("ma50_pct"), 1),
+        "{{ma100_pct}}":       fmt_pct(breadth.get("ma100_pct"), 1),
         "{{sentiment_summary}}": sentiment.get("summary", "—"),
         "{{sentiment_label}}": sentiment.get("label", "—"),
         "{{sentiment_class}}": sentiment.get("label", "").lower(),
-        "{{screened_rows}}": render_screened_rows(snapshot.get("screened", [])),
-        "{{sector_rows}}": render_sector_rows(sectors),
+        "{{screened_rows}}":   render_screened_rows(snapshot.get("screened", [])),
+        "{{sector_rows}}":     render_sector_rows(sectors),
+        # Regime
+        "{{regime_name}}":          regime.get("regime_name", "—"),
+        "{{regime_div_flag}}":       div_flag,
+        "{{regime_div_class}}":      div_class,
+        "{{regime_rsi21}}":          fmt_num(ind.get("rsi21"), 1),
+        "{{regime_trend}}":          cls.get("trend", "—"),
+        "{{regime_breadth}}":        fmt_num(ind.get("breadth_pct"), 1) + "%",
+        "{{regime_breadth_label}}":  cls.get("breadth", "—"),
+        "{{regime_nhnl}}":           fmt_num(ind.get("nhnl_rsi"), 1),
+        "{{regime_nhnl_label}}":     cls.get("nhnl", "—"),
+        "{{regime_mfi}}":            fmt_num(ind.get("mfi_rsi"), 1),
+        "{{regime_mfi_label}}":      cls.get("mfi", "—"),
+        "{{regime_ad}}":             fmt_num(ind.get("ad_rsi"), 1),
+        "{{regime_ad_label}}":       cls.get("ad", "—"),
+        "{{regime_gap}}":            f"{gap:+.1f}" if isinstance(gap, (int, float)) else "—",
+        "{{regime_gap_class}}":      gap_class,
+        "{{regime_internal_avg}}":   fmt_num(div.get("internal_avg"), 1),
+        "{{regime_div_severity}}":   div.get("severity", "—"),
+        "{{regime_allocation}}":     str(regime.get("allocation", "—")),
+        "{{regime_dir5d}}":          "Y" if div.get("dir_5d") else "N",
+        "{{regime_dir10d}}":         "Y" if div.get("dir_10d") else "N",
+        "{{regime_scenario_cards}}": render_scenario_cards(regime.get("scenarios", [])),
     }
     for k, v in replacements.items():
         html = html.replace(k, str(v))

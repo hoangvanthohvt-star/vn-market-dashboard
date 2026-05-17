@@ -62,6 +62,28 @@
   .sentiment-pill.neutral, .sentiment-pill.mixed { background: rgba(139,148,158,0.18); color: var(--muted); }
   footer { margin-top: 32px; color: var(--muted); font-size: 12px; text-align: center; }
   a { color: var(--accent); text-decoration: none; }
+  /* Regime */
+  .regime-box { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .regime-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .regime-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-right: 10px; }
+  .regime-name { font-size: 15px; font-weight: 600; }
+  .div-pill { font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; }
+  .div-pill.aligned { background: rgba(88,166,255,0.12); color: var(--accent); }
+  .div-pill.bearish { background: rgba(248,81,73,0.13); color: var(--down); }
+  .div-pill.bullish { background: rgba(63,185,80,0.13); color: var(--up); }
+  .regime-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .regime-stat { background: var(--panel-2); border-radius: 6px; padding: 10px 12px; }
+  .regime-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .regime-stat-val { font-size: 22px; font-weight: 600; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+  .regime-stat-sub { font-size: 11px; color: var(--muted); }
+  .gap-bearish { color: var(--down); }
+  .gap-bullish { color: var(--up); }
+  .scenario-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+  .scenario-card { background: var(--panel-2); border-radius: 6px; padding: 12px 14px; }
+  .scenario-prob { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .scenario-name { font-size: 13px; font-weight: 600; margin: 4px 0 6px; }
+  .scenario-row { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+  .scenario-row span { color: var(--text); }
 </style>
 </head>
 <body>
@@ -69,7 +91,7 @@
   <header>
     <div>
       <h1>VN Market Daily</h1>
-      <div class="subtitle">2026-05-15 · generated 2026-05-17 09:29 ICT</div>
+      <div class="subtitle">2026-05-15 · generated 2026-05-17 10:19 ICT</div>
     </div>
     <div class="sentiment-pill neutral">Zalo: NEUTRAL</div>
   </header>
@@ -94,6 +116,59 @@
     <div class="card">
       <div class="label">Sentiment</div>
       <div class="value" style="font-size:15px; font-weight:500; line-height:1.4;">1 bullish, 1 mixed, 3 neutral across 5 groups. Dòng tiền luân chuyển vào Dầu khí, BĐS KCN.</div>
+    </div>
+  </div>
+
+  <h2>Market Regime</h2>
+  <div class="regime-box">
+    <div class="regime-header">
+      <div>
+        <span class="regime-label">REGIME</span>
+        <span class="regime-name">Strong Uptrend – Below Average (40.9%) – NHNL Weak · MFI Above Average · A/D Below Average</span>
+      </div>
+      <span class="div-pill bearish">DIVERGENT (Bearish, Dir: 10d, Gap +20.4)</span>
+    </div>
+    <div class="regime-grid">
+      <div class="regime-stat">
+        <div class="regime-stat-label">VNI RSI 21D</div>
+        <div class="regime-stat-val">64.6</div>
+        <div class="regime-stat-sub">Strong Uptrend</div>
+      </div>
+      <div class="regime-stat">
+        <div class="regime-stat-label">Breadth % &gt; MA50</div>
+        <div class="regime-stat-val">40.9%</div>
+        <div class="regime-stat-sub">Below Average (40.9%)</div>
+      </div>
+      <div class="regime-stat">
+        <div class="regime-stat-label">NHNL RSI</div>
+        <div class="regime-stat-val">35.7</div>
+        <div class="regime-stat-sub">Weak</div>
+      </div>
+      <div class="regime-stat">
+        <div class="regime-stat-label">MFI RSI</div>
+        <div class="regime-stat-val">51.1</div>
+        <div class="regime-stat-sub">Above Average</div>
+      </div>
+      <div class="regime-stat">
+        <div class="regime-stat-label">A/D RSI</div>
+        <div class="regime-stat-val">49.1</div>
+        <div class="regime-stat-sub">Below Average</div>
+      </div>
+      <div class="regime-stat">
+        <div class="regime-stat-label">Gap Divergence</div>
+        <div class="regime-stat-val gap-bearish">+20.4</div>
+        <div class="regime-stat-sub">Int. avg 44.2 · Moderate</div>
+      </div>
+      <div class="regime-stat">
+        <div class="regime-stat-label">Allocation</div>
+        <div class="regime-stat-val">60%</div>
+        <div class="regime-stat-sub">Dir: 5d N · 10d Y</div>
+      </div>
+    </div>
+    <div class="scenario-grid">
+      <div class='scenario-card'><div class='scenario-prob'>55%</div><div class='scenario-name'>Distribution accelerates</div><div class='scenario-row'>✓ <span>RSI21 breaks 55, breadth falls below 35%.</span></div><div class='scenario-row'>✗ <span>Breadth and NHNL recover, RSI21 holds 60+.</span></div><div class='scenario-row'>Alloc <span>20%</span></div></div>
+<div class='scenario-card'><div class='scenario-prob'>40%</div><div class='scenario-name'>Divergence fades, upside resumes</div><div class='scenario-row'>✓ <span>NHNL and A/D turn up alongside RSI21.</span></div><div class='scenario-row'>✗ <span>Gap divergence widens beyond 25.</span></div><div class='scenario-row'>Alloc <span>60%</span></div></div>
+<div class='scenario-card'><div class='scenario-prob'>5%</div><div class='scenario-name'>Sideways chop</div><div class='scenario-row'>✓ <span>RSI21 oscillates 58-65, breadth flat.</span></div><div class='scenario-row'>✗ <span>Decisive directional break.</span></div><div class='scenario-row'>Alloc <span>40%</span></div></div>
     </div>
   </div>
 
