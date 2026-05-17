@@ -126,7 +126,7 @@ def calc_divergence(rows):
         return {
             "dir_5d": False, "dir_10d": False, "type": None,
             "gap": 0.0, "internal_avg": 0.0, "severity": "Insufficient Data",
-            "rsi_dir_5d": "flat", "rsi_dir_10d": "flat",
+            "rsi_dir_5d": "flat", "rsi_dir_10d": "flat", "detail": {},
         }
 
     rsi21_s   = [r["rsi21"]       for r in rows]
@@ -136,6 +136,7 @@ def calc_divergence(rows):
     ad_s      = [r["ad_rsi"] for r in rows if r.get("ad_rsi") is not None]
 
     dir_results = {}
+    detail = {}
     for n, key in [(5, "5d"), (10, "10d")]:
         rsi_dir = _dir(rsi21_s, n)
         internals = [_dir(s, n) for s in [breadth_s, nhnl_s, mfi_s] if len(s) > n]
@@ -143,7 +144,21 @@ def calc_divergence(rows):
             internals.append(_dir(ad_s, n))
         opposite = sum(1 for d in internals if d not in (rsi_dir, "flat"))
         diverged = opposite >= 3
-        dir_results[key] = {"rsi_dir": rsi_dir, "diverged": diverged}
+        dir_results[key] = {"rsi_dir": rsi_dir, "diverged": diverged, "opposite": opposite}
+
+        def chg(s):
+            return round(s[-1] - s[-1 - n], 1) if len(s) > n else None
+
+        detail[key] = {
+            "rsi21":         chg(rsi21_s),
+            "breadth":       chg(breadth_s),
+            "nhnl":          chg(nhnl_s),
+            "mfi":           chg(mfi_s),
+            "ad":            chg(ad_s) if len(ad_s) > n else None,
+            "opposite_count": opposite,
+            "total_internals": len(internals),
+            "diverged":      diverged,
+        }
 
     latest = rows[-1]
     ad_val = latest.get("ad_rsi") or 0.0
@@ -154,18 +169,17 @@ def calc_divergence(rows):
     dir_5d  = dir_results["5d"]["diverged"]
     dir_10d = dir_results["10d"]["diverged"]
     if dir_5d or dir_10d:
-        # Use the rsi direction from the longest confirmed timeframe
         rsi_dir_ref = dir_results["10d"]["rsi_dir"] if dir_10d else dir_results["5d"]["rsi_dir"]
         div_type = "bearish" if rsi_dir_ref == "rising" else "bullish"
 
     strong_dir = dir_5d and dir_10d
     gap_abs    = abs(gap)
 
-    if strong_dir and gap_abs > 20:        severity = "Severe"
-    elif strong_dir or (dir_10d and gap_abs >= 12): severity = "Moderate"
-    elif dir_10d or gap_abs >= 12:         severity = "Mild"
-    elif dir_5d:                           severity = "Early Warning"
-    else:                                  severity = "None"
+    if strong_dir and gap_abs > 20:                      severity = "Severe"
+    elif strong_dir or (dir_10d and gap_abs >= 12):      severity = "Moderate"
+    elif dir_10d or gap_abs >= 12:                       severity = "Mild"
+    elif dir_5d:                                         severity = "Early Warning"
+    else:                                                severity = "None"
 
     return {
         "dir_5d":        dir_5d,
@@ -176,6 +190,7 @@ def calc_divergence(rows):
         "severity":      severity,
         "rsi_dir_5d":    dir_results["5d"]["rsi_dir"],
         "rsi_dir_10d":   dir_results["10d"]["rsi_dir"],
+        "detail":        detail,
     }
 
 
@@ -391,9 +406,21 @@ def analyze(rows):
     scenarios = build_scenarios(rows30, div, trend_label, breadth_label, mf_summary, alloc)
     phases    = build_phases(rows30)
 
+    # 30-day history for chart + divergence detail
+    history = {
+        "dates":   [r["date"]        for r in rows30],
+        "vnindex": [r["vnindex"]     for r in rows30],
+        "rsi21":   [r["rsi21"]       for r in rows30],
+        "breadth": [r["breadth_pct"] for r in rows30],
+        "nhnl":    [r["nhnl_rsi"]    for r in rows30],
+        "mfi":     [r["mfi_rsi"]     for r in rows30],
+        "ad":      [r.get("ad_rsi")  for r in rows30],
+    }
+
     return {
         "date":      latest["date"],
         "vnindex":   latest["vnindex"],
+        "history":   history,
         "indicators": {
             "rsi21":       latest["rsi21"],
             "rsi70":       latest.get("rsi70"),

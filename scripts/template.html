@@ -1,208 +1,320 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VN Market Daily — {{latest_date}}</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0e1116;
-    --panel: #161b22;
-    --panel-2: #1c232c;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --border: #30363d;
-    --up: #3fb950;
-    --down: #f85149;
-    --accent: #58a6ff;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-  }
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
-  header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
-  h1 { font-size: 22px; margin: 0; font-weight: 600; }
-  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 12px; font-weight: 600; }
-  .subtitle { color: var(--muted); font-size: 13px; }
-  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-  }
-  .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .card .value { font-size: 28px; font-weight: 600; margin-top: 6px; font-variant-numeric: tabular-nums; }
-  .card .meta { color: var(--muted); font-size: 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .up { color: var(--up); }
-  .down { color: var(--down); }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-  }
-  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-  th { background: var(--panel-2); color: var(--muted); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
-  tr:last-child td { border-bottom: none; }
-  td.num, th.num { text-align: right; }
-  td.ticker { font-weight: 600; color: var(--accent); }
-  .sentiment-pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
-  .sentiment-pill.bullish { background: rgba(63,185,80,0.15); color: var(--up); }
-  .sentiment-pill.bearish { background: rgba(248,81,73,0.15); color: var(--down); }
-  .sentiment-pill.neutral, .sentiment-pill.mixed { background: rgba(139,148,158,0.18); color: var(--muted); }
-  footer { margin-top: 32px; color: var(--muted); font-size: 12px; text-align: center; }
-  a { color: var(--accent); text-decoration: none; }
-  /* Regime */
-  .regime-box { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
-  .regime-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-  .regime-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-right: 10px; }
-  .regime-name { font-size: 15px; font-weight: 600; }
-  .div-pill { font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; }
-  .div-pill.aligned { background: rgba(88,166,255,0.12); color: var(--accent); }
-  .div-pill.bearish { background: rgba(248,81,73,0.13); color: var(--down); }
-  .div-pill.bullish { background: rgba(63,185,80,0.13); color: var(--up); }
-  .regime-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .regime-stat { background: var(--panel-2); border-radius: 6px; padding: 10px 12px; }
-  .regime-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .regime-stat-val { font-size: 22px; font-weight: 600; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
-  .regime-stat-sub { font-size: 11px; color: var(--muted); }
-  .gap-bearish { color: var(--down); }
-  .gap-bullish { color: var(--up); }
-  .scenario-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
-  .scenario-card { background: var(--panel-2); border-radius: 6px; padding: 12px 14px; }
-  .scenario-prob { font-size: 20px; font-weight: 700; color: var(--accent); }
-  .scenario-name { font-size: 13px; font-weight: 600; margin: 4px 0 6px; }
-  .scenario-row { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
-  .scenario-row span { color: var(--text); }
+:root {
+  --dc-dark:#173F35; --dc-green:#00BF6F; --dc-gold:#C08F4F;
+  --dc-gray:#97999B; --dc-black:#101820; --dc-white:#FFFFFF;
+  --dc-light:#F5F5F5; --dc-red:#FF0037; --dc-blue:#014ABD;
+  --dc-orange:#FF671B; --dc-border:#E8E8E8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Manrope',sans-serif;background:#f0f2f5;color:var(--dc-black);line-height:1.5;}
+.dashboard{max-width:1280px;margin:0 auto;padding:24px 20px 40px;}
+
+/* ── Header ── */
+.header{background:var(--dc-dark);color:white;border-radius:16px;padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:var(--dc-green);opacity:0.08;border-radius:50%;}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.header h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;}
+.header .subtitle{color:rgba(255,255,255,0.6);font-size:13px;margin-top:4px;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.date-badge{background:rgba(255,255,255,0.12);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;}
+.vni-badge{font-size:28px;font-weight:800;letter-spacing:-1px;}
+.vni-chg{font-size:13px;font-weight:600;opacity:0.85;}
+.vni-chg.up{color:#4ade80;} .vni-chg.down{color:#f87171;}
+
+/* ── Executive Summary ── */
+.exec-box{background:white;border-radius:14px;padding:22px 26px;margin-bottom:20px;border-left:5px solid var(--dc-green);box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.exec-box h2{font-size:13px;font-weight:700;color:var(--dc-dark);margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;}
+.exec-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;}
+@media(max-width:720px){.exec-grid{grid-template-columns:1fr;}}
+.exec-item{display:flex;gap:8px;font-size:13px;align-items:baseline;}
+.exec-label{color:var(--dc-gray);font-weight:600;min-width:155px;flex-shrink:0;}
+.exec-val{font-weight:700;color:var(--dc-black);}
+.exec-val.warn{color:var(--dc-orange);}
+.exec-val.danger{color:var(--dc-red);}
+.exec-val.ok{color:var(--dc-green);}
+.warn-box{margin-top:14px;padding:12px 16px;background:rgba(255,103,27,0.07);border-radius:10px;font-size:13px;}
+.warn-box b{color:var(--dc-orange);}
+.warn-box ul{margin:6px 0 0 18px;color:var(--dc-black);}
+.warn-box li{margin-bottom:3px;}
+
+/* ── Metric Cards ── */
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.mc{background:white;border-radius:12px;padding:16px 18px;border-left:4px solid var(--dc-dark);box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.mc.pos{border-left-color:var(--dc-green);}
+.mc.neg{border-left-color:var(--dc-red);}
+.mc.warn{border-left-color:var(--dc-orange);}
+.mc.neu{border-left-color:var(--dc-gray);}
+.mc-label{font-size:11px;color:var(--dc-gray);text-transform:uppercase;letter-spacing:0.5px;}
+.mc-value{font-size:26px;font-weight:800;color:var(--dc-dark);margin:2px 0;}
+.mc.pos .mc-value{color:var(--dc-green);}
+.mc.neg .mc-value{color:var(--dc-red);}
+.mc.warn .mc-value{color:var(--dc-orange);}
+.mc.neu .mc-value{color:var(--dc-gray);}
+.mc-sub{font-size:11px;color:var(--dc-gray);}
+
+/* ── Sections ── */
+.section{background:white;border-radius:14px;padding:22px 26px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.section h2{font-size:13px;font-weight:700;color:var(--dc-dark);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--dc-light);text-transform:uppercase;letter-spacing:0.8px;}
+
+/* ── Chart ── */
+.chart-wrap{position:relative;height:340px;}
+
+/* ── Divergence Checklist ── */
+.div-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:900px){.div-grid{grid-template-columns:1fr;}}
+.div-card{background:var(--dc-light);border-radius:10px;padding:14px 16px;}
+.div-card h3{font-size:12px;font-weight:700;color:var(--dc-dark);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+.div-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(0,0,0,0.05);}
+.div-row:last-of-type{border-bottom:none;}
+.div-row .ind{color:var(--dc-gray);}
+.div-row .val{font-weight:700;}
+.div-row .val.up{color:var(--dc-green);}
+.div-row .val.down{color:var(--dc-red);}
+.div-row .val.flat{color:var(--dc-gray);}
+.div-row .val.bold{color:var(--dc-black);}
+.div-verdict{margin-top:10px;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:700;text-align:center;}
+.div-verdict.aligned{background:rgba(0,191,111,0.12);color:#0a7a4a;}
+.div-verdict.divergent{background:rgba(255,0,55,0.1);color:var(--dc-red);}
+.div-verdict.warning{background:rgba(255,103,27,0.12);color:var(--dc-orange);}
+
+/* ── Scenario Cards ── */
+.scenario-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+.scenario{background:white;border-radius:12px;border:1px solid var(--dc-border);padding:18px;position:relative;overflow:hidden;}
+.scenario::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
+.scenario.s1::before{background:var(--dc-green);}
+.scenario.s2::before{background:var(--dc-orange);}
+.scenario.s3::before{background:var(--dc-red);}
+.scenario h3{font-size:14px;font-weight:700;color:var(--dc-dark);margin-bottom:4px;}
+.scenario .prob{font-size:30px;font-weight:800;margin:6px 0;}
+.scenario.s1 .prob{color:var(--dc-green);}
+.scenario.s2 .prob{color:var(--dc-orange);}
+.scenario.s3 .prob{color:var(--dc-red);}
+.prob-bar{height:5px;background:#eee;border-radius:3px;margin:8px 0 12px;overflow:hidden;}
+.prob-fill{height:100%;border-radius:3px;}
+.scenario.s1 .prob-fill{background:var(--dc-green);}
+.scenario.s2 .prob-fill{background:var(--dc-orange);}
+.scenario.s3 .prob-fill{background:var(--dc-red);}
+.sc-detail{font-size:12px;color:var(--dc-gray);margin-bottom:5px;}
+.sc-detail b{color:var(--dc-black);}
+.sc-alloc{display:inline-block;background:var(--dc-light);padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;color:var(--dc-dark);margin-top:8px;}
+
+/* ── Phase Table ── */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--dc-dark);color:white;padding:9px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;}
+td{padding:8px 12px;border-bottom:1px solid #eee;}
+tbody tr:nth-child(even){background:var(--dc-light);}
+tbody tr:hover{background:rgba(0,191,111,0.05);}
+.tr{text-align:right;} .tc{text-align:center;}
+.fw{font-weight:700;} .pos-t{color:var(--dc-green);font-weight:600;} .neg-t{color:var(--dc-red);font-weight:600;} .warn-t{color:var(--dc-orange);font-weight:600;}
+.ticker-link{color:var(--dc-dark);font-weight:700;}
+
+/* ── Sentiment pill ── */
+.s-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.s-pill.bullish{background:rgba(0,191,111,0.12);color:#0a7a4a;}
+.s-pill.bearish{background:rgba(255,0,55,0.1);color:var(--dc-red);}
+.s-pill.neutral,.s-pill.mixed{background:#eee;color:var(--dc-gray);}
+
+/* ── Overview grid ── */
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+.ov-card{background:white;border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.ov-label{font-size:11px;color:var(--dc-gray);text-transform:uppercase;letter-spacing:0.4px;}
+.ov-value{font-size:22px;font-weight:800;margin:3px 0;}
+.ov-meta{font-size:11px;color:var(--dc-gray);}
+
+/* ── Footer ── */
+.footer{text-align:center;padding:16px 0 0;color:var(--dc-gray);font-size:12px;}
+.footer a{color:var(--dc-dark);font-weight:700;text-decoration:none;}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
+<div class="dashboard">
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="header-top">
     <div>
       <h1>VN Market Daily</h1>
-      <div class="subtitle">{{latest_date}} · generated {{generated_at}}</div>
+      <div class="subtitle">Breadth · Regime · Screener · generated {{generated_at}}</div>
     </div>
-    <div class="sentiment-pill {{sentiment_class}}">Zalo: {{sentiment_label}}</div>
-  </header>
-
-  <h2>Market Overview</h2>
-  <div class="grid">
-    <div class="card">
-      <div class="label">VN-Index</div>
-      <div class="value {{vni_color}}">{{vni_close}}</div>
-      <div class="meta {{vni_color}}">{{vni_change}} ({{vni_change_pct}})</div>
-    </div>
-    <div class="card">
-      <div class="label">Breadth · % > MA20</div>
-      <div class="value">{{ma20_pct}}</div>
-      <div class="meta">MA50: {{ma50_pct}} · MA100: {{ma100_pct}}</div>
-    </div>
-    <div class="card">
-      <div class="label">Universe</div>
-      <div class="value">{{universe_total}}</div>
-      <div class="meta">{{passed_count}} passed the screen</div>
-    </div>
-    <div class="card">
-      <div class="label">Sentiment</div>
-      <div class="value" style="font-size:15px; font-weight:500; line-height:1.4;">{{sentiment_summary}}</div>
+    <div class="header-right">
+      <div class="date-badge">{{latest_date}}</div>
+      <div class="vni-badge">{{vni_close}}</div>
+      <div class="vni-chg {{vni_color}}">{{vni_change}} ({{vni_change_pct}})</div>
     </div>
   </div>
+</div>
 
-  <h2>Market Regime</h2>
-  <div class="regime-box">
-    <div class="regime-header">
-      <div>
-        <span class="regime-label">REGIME</span>
-        <span class="regime-name">{{regime_name}}</span>
-      </div>
-      <span class="div-pill {{regime_div_class}}">{{regime_div_flag}}</span>
+<!-- ══ MARKET OVERVIEW CARDS ══ -->
+<div class="ov-grid">
+  <div class="ov-card">
+    <div class="ov-label">Breadth · % &gt; MA20</div>
+    <div class="ov-value">{{ma20_pct}}</div>
+    <div class="ov-meta">MA50: {{ma50_pct}} · MA100: {{ma100_pct}}</div>
+  </div>
+  <div class="ov-card">
+    <div class="ov-label">Screened stocks</div>
+    <div class="ov-value">{{passed_count}}</div>
+    <div class="ov-meta">out of {{universe_total}} tickers</div>
+  </div>
+  <div class="ov-card">
+    <div class="ov-label">Zalo sentiment</div>
+    <div class="ov-value" style="font-size:15px;line-height:1.3;">{{sentiment_summary}}</div>
+    <div class="ov-meta" style="margin-top:4px;"><span class="s-pill {{sentiment_class}}">{{sentiment_label}}</span></div>
+  </div>
+</div>
+
+<!-- ══ EXECUTIVE SUMMARY ══ -->
+<div class="exec-box">
+  <h2>Market Regime — Executive Summary</h2>
+  <div class="exec-grid">
+    <div class="exec-item"><span class="exec-label">Current Setting</span><span class="exec-val">{{regime_name}}</span></div>
+    <div class="exec-item"><span class="exec-label">Divergence</span><span class="exec-val {{regime_exec_div_class}}">{{regime_div_flag}}</span></div>
+    <div class="exec-item"><span class="exec-label">Direction 5-day / 10-day</span><span class="exec-val">{{regime_dir5d}} / {{regime_dir10d}}</span></div>
+    <div class="exec-item"><span class="exec-label">Gap (RSI − Internal Avg)</span><span class="exec-val {{regime_gap_exec_class}}">{{regime_gap}} (avg: {{regime_internal_avg}})</span></div>
+    <div class="exec-item"><span class="exec-label">Severity</span><span class="exec-val {{regime_sev_class}}">{{regime_div_severity}}</span></div>
+    <div class="exec-item"><span class="exec-label">Recommended Allocation</span><span class="exec-val">{{regime_allocation}}%</span></div>
+  </div>
+  {{exec_warnings}}
+</div>
+
+<!-- ══ INDICATOR METRIC CARDS ══ -->
+<div class="metric-row">
+  {{regime_metric_cards}}
+</div>
+
+<!-- ══ 30-DAY CHART ══ -->
+<div class="section">
+  <h2>30-Day Price &amp; Indicator Chart</h2>
+  <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+</div>
+
+<!-- ══ DIVERGENCE CHECKLIST ══ -->
+<div class="section">
+  <h2>Divergence Checklist — {{latest_date}}</h2>
+  <div class="div-grid">
+    <div class="div-card">
+      <h3>5-Day Direction</h3>
+      {{regime_div5d_rows}}
+      <div class="div-verdict {{regime_div5d_verdict_class}}">{{regime_div5d_verdict_text}}</div>
     </div>
-    <div class="regime-grid">
-      <div class="regime-stat">
-        <div class="regime-stat-label">VNI RSI 21D</div>
-        <div class="regime-stat-val">{{regime_rsi21}}</div>
-        <div class="regime-stat-sub">{{regime_trend}}</div>
-      </div>
-      <div class="regime-stat">
-        <div class="regime-stat-label">Breadth % &gt; MA50</div>
-        <div class="regime-stat-val">{{regime_breadth}}</div>
-        <div class="regime-stat-sub">{{regime_breadth_label}}</div>
-      </div>
-      <div class="regime-stat">
-        <div class="regime-stat-label">NHNL RSI</div>
-        <div class="regime-stat-val">{{regime_nhnl}}</div>
-        <div class="regime-stat-sub">{{regime_nhnl_label}}</div>
-      </div>
-      <div class="regime-stat">
-        <div class="regime-stat-label">MFI RSI</div>
-        <div class="regime-stat-val">{{regime_mfi}}</div>
-        <div class="regime-stat-sub">{{regime_mfi_label}}</div>
-      </div>
-      <div class="regime-stat">
-        <div class="regime-stat-label">A/D RSI</div>
-        <div class="regime-stat-val">{{regime_ad}}</div>
-        <div class="regime-stat-sub">{{regime_ad_label}}</div>
-      </div>
-      <div class="regime-stat">
-        <div class="regime-stat-label">Gap Divergence</div>
-        <div class="regime-stat-val {{regime_gap_class}}">{{regime_gap}}</div>
-        <div class="regime-stat-sub">Int. avg {{regime_internal_avg}} · {{regime_div_severity}}</div>
-      </div>
-      <div class="regime-stat">
-        <div class="regime-stat-label">Allocation</div>
-        <div class="regime-stat-val">{{regime_allocation}}%</div>
-        <div class="regime-stat-sub">Dir: 5d {{regime_dir5d}} · 10d {{regime_dir10d}}</div>
-      </div>
+    <div class="div-card">
+      <h3>10-Day Direction</h3>
+      {{regime_div10d_rows}}
+      <div class="div-verdict {{regime_div10d_verdict_class}}">{{regime_div10d_verdict_text}}</div>
     </div>
-    <div class="scenario-grid">
-      {{regime_scenario_cards}}
+    <div class="div-card">
+      <h3>Gap Divergence</h3>
+      {{regime_gap_rows}}
+      <div class="div-verdict {{regime_gap_verdict_class}}">{{regime_gap_verdict_text}}</div>
     </div>
   </div>
+</div>
 
-  <h2>Screened Stocks · price > EMA20 > EMA50, RS line > MA50</h2>
+<!-- ══ SCENARIOS ══ -->
+<div class="section">
+  <h2>Scenarios — Next 1–2 Weeks</h2>
+  <div class="scenario-cards">
+    {{regime_scenario_cards}}
+  </div>
+</div>
+
+<!-- ══ PHASE TABLE ══ -->
+<div class="section">
+  <h2>Phase Analysis — Last 30 Trading Days</h2>
+  <div style="overflow-x:auto;">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Period</th><th>Setting</th>
+        <th class="tr">VNI End</th><th class="tr">Return</th>
+        <th>Divergence</th>
+      </tr>
+    </thead>
+    <tbody>{{regime_phase_rows}}</tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ══ SCREENED STOCKS ══ -->
+<div class="section">
+  <h2>Screened Stocks · price &gt; EMA20 &gt; EMA50 · RS-line &gt; MA50</h2>
+  <div style="overflow-x:auto;">
   <table>
     <thead>
       <tr>
         <th>Ticker</th>
-        <th class="num">Close</th>
-        <th class="num">Day %</th>
-        <th class="num">EMA20</th>
-        <th class="num">EMA50</th>
-        <th class="num">RS strength</th>
-        <th class="num">vs EMA20</th>
-        <th class="num">Turnover (bn)</th>
+        <th class="tr">Close</th><th class="tr">Day %</th>
+        <th class="tr">EMA20</th><th class="tr">EMA50</th>
+        <th class="tr">RS strength</th><th class="tr">vs EMA20</th>
+        <th class="tr">Turnover (bn)</th>
       </tr>
     </thead>
-    <tbody>
-      {{screened_rows}}
-    </tbody>
+    <tbody>{{screened_rows}}</tbody>
   </table>
+  </div>
+</div>
 
+<!-- ══ SECTOR MFI ══ -->
+<div class="section">
   <h2>Sector Money Flow</h2>
+  <div style="overflow-x:auto;">
   <table>
     <thead>
-      <tr><th>Sector</th><th class="num">MFI (latest)</th><th class="num">Δ vs prev</th></tr>
+      <tr><th>Sector</th><th class="tr">MFI</th><th class="tr">Δ vs prev</th></tr>
     </thead>
-    <tbody>
-      {{sector_rows}}
-    </tbody>
+    <tbody>{{sector_rows}}</tbody>
   </table>
-
-  <footer>
-    Built with <a href="https://claude.com/claude-code">Claude Code</a> · data sourced daily ·
-    <a href="data/latest.json">latest.json</a>
-  </footer>
+  </div>
 </div>
+
+<div class="footer">
+  <a href="https://hoangvanthohvt-star.github.io/vn-market-dashboard/">VN Market Daily</a> ·
+  data from MSSQL + Google Drive ·
+  <a href="data/latest.json">latest.json</a>
+</div>
+
+</div><!-- end dashboard -->
+
+<script>
+(function(){
+  const D = {{chart_json}};
+  if(!D||!D.dates) return;
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels: D.dates,
+      datasets:[
+        {label:'VNIndex (right)',data:D.vnindex,borderColor:'#173F35',backgroundColor:'rgba(23,63,53,0.07)',fill:true,tension:0.3,pointRadius:2,borderWidth:2.5,yAxisID:'y1'},
+        {label:'RSI 21D',data:D.rsi21,borderColor:'#00BF6F',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:1.5,borderWidth:2,yAxisID:'y'},
+        {label:'Breadth %>MA50',data:D.breadth,borderColor:'#C08F4F',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:1.5,borderWidth:2,yAxisID:'y'},
+        {label:'NHNL RSI',data:D.nhnl,borderColor:'#FF0037',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:1.5,borderWidth:2,borderDash:[5,3],yAxisID:'y'},
+        {label:'MFI RSI',data:D.mfi,borderColor:'#014ABD',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:1,borderWidth:1.5,yAxisID:'y'},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',labels:{usePointStyle:true,padding:14,font:{family:'Manrope',size:11}}},
+        tooltip:{backgroundColor:'#173F35',titleFont:{family:'Manrope'},bodyFont:{family:'Manrope'}}
+      },
+      scales:{
+        y:{position:'left',title:{display:true,text:'RSI / Breadth / NHNL',font:{family:'Manrope',size:11}},min:10,max:80,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{family:'Manrope',size:11}}},
+        y1:{position:'right',title:{display:true,text:'VNIndex',font:{family:'Manrope',size:11}},grid:{drawOnChartArea:false},ticks:{font:{family:'Manrope',size:11}}},
+        x:{ticks:{font:{family:'Manrope',size:10},maxRotation:45},grid:{display:false}}
+      }
+    }
+  });
+})();
+</script>
 </body>
 </html>

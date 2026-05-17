@@ -2,13 +2,13 @@
 Render docs/index.html from the daily JSON snapshot.
 
 Inputs:
-  data/latest.json   (full snapshot saved by the scheduled task)
+  data/latest.json
   scripts/template.html
 
 Output:
   docs/index.html
-  docs/data/latest.json     (copy for client access)
-  docs/data/YYYY-MM-DD.json (archive)
+  docs/data/latest.json
+  docs/data/YYYY-MM-DD.json
 """
 
 import json
@@ -16,168 +16,405 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT     = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
-DOCS = ROOT / "docs"
+DOCS     = ROOT / "docs"
 TEMPLATE = ROOT / "scripts" / "template.html"
 
 
-def fmt_num(x, digits=0):
-    if x is None:
-        return "—"
-    try:
-        return f"{float(x):,.{digits}f}"
-    except (TypeError, ValueError):
-        return str(x)
+# ---------------------------------------------------------------------------
+# Formatters
+# ---------------------------------------------------------------------------
 
+def fmt(x, digits=0):
+    if x is None: return "—"
+    try:    return f"{float(x):,.{digits}f}"
+    except: return str(x)
 
-def fmt_pct(x, digits=2):
-    if x is None:
-        return "—"
-    try:
-        return f"{float(x):+.{digits}f}%"
-    except (TypeError, ValueError):
-        return str(x)
+def fmt_pct(x, digits=2, sign=False):
+    if x is None: return "—"
+    try:    return f"{float(x):+.{digits}f}%" if sign else f"{float(x):.{digits}f}%"
+    except: return str(x)
 
-
-def color_class(x):
-    if x is None:
-        return ""
+def color(x):
     try:
         v = float(x)
-    except (TypeError, ValueError):
-        return ""
-    if v > 0:
-        return "up"
-    if v < 0:
-        return "down"
-    return ""
+        return "up" if v > 0 else ("down" if v < 0 else "")
+    except: return ""
 
+def pos_neg(x):
+    try:
+        v = float(x)
+        return "pos" if v > 0 else ("neg" if v < 0 else "neu")
+    except: return "neu"
+
+
+# ---------------------------------------------------------------------------
+# Market Overview — screened & sector rows (DC style)
+# ---------------------------------------------------------------------------
 
 def render_screened_rows(rows):
-    html = []
+    out = []
     for r in rows:
         chg = r.get("PRICE_PCT_1D")
-        html.append(
+        cls = "pos-t" if chg and float(chg) > 0 else ("neg-t" if chg and float(chg) < 0 else "")
+        rs  = r.get("rs_strength_pct", 0)
+        out.append(
             f"<tr>"
-            f"<td class='ticker'>{r['TICKER']}</td>"
-            f"<td class='num'>{fmt_num(r['PX_LAST'])}</td>"
-            f"<td class='num {color_class(chg)}'>{fmt_pct(chg)}</td>"
-            f"<td class='num'>{fmt_num(r['EMA20'])}</td>"
-            f"<td class='num'>{fmt_num(r['EMA50'])}</td>"
-            f"<td class='num up'>{fmt_pct(r['rs_strength_pct'])}</td>"
-            f"<td class='num'>{fmt_pct(r['ema20_gap_pct'])}</td>"
-            f"<td class='num'>{fmt_num(r['turnover_bn_vnd'], 1)}</td>"
+            f"<td class='fw ticker-link'>{r['TICKER']}</td>"
+            f"<td class='tr'>{fmt(r['PX_LAST'])}</td>"
+            f"<td class='tr {cls}'>{fmt_pct(chg, sign=True)}</td>"
+            f"<td class='tr'>{fmt(r['EMA20'])}</td>"
+            f"<td class='tr'>{fmt(r['EMA50'])}</td>"
+            f"<td class='tr pos-t'>{fmt_pct(rs, sign=True)}</td>"
+            f"<td class='tr {cls}'>{fmt_pct(r.get('ema20_gap_pct'), sign=True)}</td>"
+            f"<td class='tr'>{fmt(r.get('turnover_bn_vnd'), 1)}</td>"
             f"</tr>"
         )
-    return "\n".join(html)
-
-
-def render_scenario_cards(scenarios):
-    html = []
-    for s in scenarios:
-        html.append(
-            f"<div class='scenario-card'>"
-            f"<div class='scenario-prob'>{s['probability']}%</div>"
-            f"<div class='scenario-name'>{s['name']}</div>"
-            f"<div class='scenario-row'>✓ <span>{s.get('confirmation','—')}</span></div>"
-            f"<div class='scenario-row'>✗ <span>{s.get('invalidation','—')}</span></div>"
-            f"<div class='scenario-row'>Alloc <span>{s.get('allocation','—')}%</span></div>"
-            f"</div>"
-        )
-    return "\n".join(html)
+    return "\n".join(out)
 
 
 def render_sector_rows(rows):
-    html = []
+    out = []
     for r in rows:
         mfi = r.get("mfi")
-        cls = "up" if mfi and mfi > 50 else ("down" if mfi and mfi < 50 else "")
-        html.append(
+        chg = r.get("mfi_change", 0)
+        cls = "pos-t" if mfi and mfi > 50 else ("neg-t" if mfi and mfi < 50 else "")
+        cc  = "pos-t" if chg and chg > 0 else ("neg-t" if chg and chg < 0 else "")
+        out.append(
+            f"<tr><td>{r['sector']}</td>"
+            f"<td class='tr {cls}'>{fmt(mfi, 1)}</td>"
+            f"<td class='tr {cc}'>{fmt_pct(chg, 1, sign=True)}</td></tr>"
+        )
+    return "\n".join(out)
+
+
+# ---------------------------------------------------------------------------
+# Regime — metric cards
+# ---------------------------------------------------------------------------
+
+def _mc_class(val, low_bad=False):
+    """Return pos/neg/warn/neu card class based on value relative to 50."""
+    try:
+        v = float(val)
+        if low_bad:
+            if v > 60: return "pos"
+            if v >= 45: return "warn"
+            return "neg"
+        else:
+            if v > 60: return "pos"
+            if v >= 45: return "warn"
+            return "neg"
+    except: return "neu"
+
+def render_metric_cards(regime):
+    if not regime: return ""
+    ind = regime.get("indicators", {})
+    cls = regime.get("classifications", {})
+    div = regime.get("divergence", {})
+    gap = div.get("gap", 0)
+
+    # RSI21
+    rsi_v   = ind.get("rsi21", 0)
+    rsi_cls = "pos" if rsi_v > 60 else ("warn" if rsi_v >= 50 else "neg")
+    # Breadth
+    br_v   = ind.get("breadth_pct", 0)
+    br_cls = "pos" if br_v > 60 else ("warn" if br_v >= 40 else "neg")
+    # NHNL
+    nh_v   = ind.get("nhnl_rsi", 0)
+    nh_cls = "pos" if nh_v > 60 else ("warn" if nh_v >= 40 else "neg")
+    # MFI
+    mf_v   = ind.get("mfi_rsi", 0)
+    mf_cls = "pos" if mf_v > 60 else ("warn" if mf_v >= 45 else "neg")
+    # AD
+    ad_v   = ind.get("ad_rsi", 0) or 0
+    ad_cls = "pos" if ad_v > 60 else ("warn" if ad_v >= 45 else "neg")
+    # Gap
+    gap_cls = "neg" if gap > 12 else ("pos" if gap < -12 else "neu")
+    gap_sub = "⚠ Bearish gap" if gap > 20 else ("Bearish gap" if gap > 12 else ("Bullish gap" if gap < -12 else "Aligned"))
+
+    cards = [
+        (rsi_cls, "RSI 21D", f"{rsi_v:.1f}", cls.get("trend", "—")),
+        (br_cls,  "Breadth % &gt; MA50", f"{br_v:.1f}%", cls.get("breadth", "—")),
+        (nh_cls,  "NHNL RSI", f"{nh_v:.1f}", cls.get("nhnl", "—")),
+        (mf_cls,  "MFI RSI",  f"{mf_v:.1f}", cls.get("mfi",  "—")),
+        (ad_cls,  "A/D RSI",  f"{ad_v:.1f}", cls.get("ad",   "—")),
+        (gap_cls, "Gap Divergence", f"{gap:+.1f}", gap_sub),
+        ("neu",   "Allocation", f"{regime.get('allocation', '—')}%", "recommended"),
+    ]
+    return "\n".join(
+        f"<div class='mc {c}'><div class='mc-label'>{lbl}</div>"
+        f"<div class='mc-value'>{val}</div><div class='mc-sub'>{sub}</div></div>"
+        for c, lbl, val, sub in cards
+    )
+
+
+# ---------------------------------------------------------------------------
+# Regime — executive summary warnings
+# ---------------------------------------------------------------------------
+
+def render_warnings(regime):
+    if not regime: return ""
+    ind  = regime.get("indicators", {})
+    div  = regime.get("divergence", {})
+    gap  = div.get("gap", 0)
+    warnings = []
+
+    if abs(gap) > 12:
+        direction = "above" if gap > 0 else "below"
+        warnings.append(
+            f"<b>Gap Divergence {gap:+.1f}</b> — RSI 21D is {abs(gap):.1f} pts {direction} "
+            f"the internal average ({div.get('internal_avg', '?')}). "
+            f"{'Index strength driven by narrow leadership.' if gap > 0 else 'Internals leading price — potential bounce.'}"
+        )
+
+    br = ind.get("breadth_pct", 50)
+    if br < 45:
+        warnings.append(
+            f"<b>Breadth only {br:.1f}%</b> — fewer than half of stocks above MA50 "
+            f"despite the headline index level. Distribution risk elevated."
+        )
+    elif br > 72:
+        warnings.append(
+            f"<b>Breadth at {br:.1f}%</b> — very extended. Watch for breadth contraction as a leading warning."
+        )
+
+    nhnl = ind.get("nhnl_rsi", 50)
+    if nhnl < 35:
+        warnings.append(
+            f"<b>NHNL RSI collapsed to {nhnl:.1f}</b> — new highs drying up rapidly. "
+            f"Momentum exhaustion beneath the surface."
+        )
+    elif nhnl > 72:
+        warnings.append(
+            f"<b>NHNL RSI at {nhnl:.1f}</b> — very strong but watch for reversal if it starts declining."
+        )
+
+    if div.get("severity") in ("Severe", "Moderate"):
+        warnings.append(
+            f"<b>Divergence severity: {div['severity']}</b> — "
+            f"{'high reversal risk, consider reducing exposure.' if div.get('type') == 'bearish' else 'potential bottom forming, watch for confirmation.'}"
+        )
+
+    if not warnings:
+        return ""
+
+    items = "".join(f"<li>{w}</li>" for w in warnings)
+    return f'<div class="warn-box"><b>⚠ KEY WARNINGS:</b><ul>{items}</ul></div>'
+
+
+# ---------------------------------------------------------------------------
+# Regime — divergence checklist
+# ---------------------------------------------------------------------------
+
+def _dir_row(label, chg):
+    if chg is None:
+        return f"<div class='div-row'><span class='ind'>{label}</span><span class='val flat'>—</span></div>"
+    sign  = "▲" if chg > 0 else ("▼" if chg < 0 else "→")
+    cls   = "up" if chg > 0 else ("down" if chg < 0 else "flat")
+    return f"<div class='div-row'><span class='ind'>{label}</span><span class='val {cls}'>{chg:+.1f} {sign}</span></div>"
+
+
+def render_div_direction_rows(detail_n):
+    if not detail_n: return ""
+    rows = [
+        _dir_row("RSI 21D",  detail_n.get("rsi21")),
+        _dir_row("Breadth",  detail_n.get("breadth")),
+        _dir_row("NHNL RSI", detail_n.get("nhnl")),
+        _dir_row("MFI RSI",  detail_n.get("mfi")),
+        _dir_row("A/D RSI",  detail_n.get("ad")),
+        f"<div class='div-row'><span class='ind'>Opposite count</span>"
+        f"<span class='val bold'>{detail_n.get('opposite_count',0)} of {detail_n.get('total_internals',4)}</span></div>",
+    ]
+    return "\n".join(rows)
+
+
+def render_gap_rows(regime):
+    if not regime: return ""
+    ind = regime.get("indicators", {})
+    div = regime.get("divergence", {})
+    gap = div.get("gap", 0)
+    avg = div.get("internal_avg", 0)
+    gap_cls = "down" if gap > 12 else ("up" if gap < -12 else "flat")
+
+    rows = [
+        f"<div class='div-row'><span class='ind'>RSI 21D</span><span class='val bold'>{ind.get('rsi21', '?'):.1f}</span></div>",
+        f"<div class='div-row'><span class='ind'>Breadth (raw %)</span><span class='val'>{ind.get('breadth_pct', '?'):.1f}</span></div>",
+        f"<div class='div-row'><span class='ind'>NHNL RSI</span><span class='val'>{ind.get('nhnl_rsi', '?'):.1f}</span></div>",
+        f"<div class='div-row'><span class='ind'>MFI RSI</span><span class='val'>{ind.get('mfi_rsi', '?'):.1f}</span></div>",
+        f"<div class='div-row'><span class='ind'>A/D RSI</span><span class='val'>{(ind.get('ad_rsi') or 0):.1f}</span></div>",
+        f"<div class='div-row'><span class='ind'>Internal Average</span><span class='val bold'>{avg:.1f}</span></div>",
+        f"<div class='div-row' style='border-top:1px solid #ddd;padding-top:6px;margin-top:4px;'>"
+        f"<span class='ind fw'>GAP = RSI − Avg</span>"
+        f"<span class='val {gap_cls} fw'>{gap:+.1f}</span></div>",
+    ]
+    return "\n".join(rows)
+
+
+def div_verdict(diverged, opposite, total, timeframe):
+    if diverged:
+        return "divergent", f"⚠ DIVERGENCE ({opposite}/{total} opposite)"
+    return "aligned", f"✓ NO DIVERGENCE ({opposite}/{total} opposite)"
+
+
+def gap_verdict(gap):
+    a = abs(gap)
+    if gap > 20:   return "divergent", "⚠ SEVERE BEARISH GAP (>+20)"
+    if gap > 12:   return "warning",   "⚠ BEARISH GAP (+12 to +20)"
+    if gap < -20:  return "divergent", "⚠ SEVERE BULLISH GAP (<−20)"
+    if gap < -12:  return "warning",   "⚠ BULLISH GAP (−12 to −20)"
+    return "aligned", "✓ ALIGNED (within ±12)"
+
+
+# ---------------------------------------------------------------------------
+# Regime — scenario cards (DC style, s1/s2/s3)
+# ---------------------------------------------------------------------------
+
+def render_scenario_cards(scenarios):
+    out = []
+    for i, s in enumerate(scenarios[:3]):
+        cls    = f"s{i+1}"
+        prob   = s.get("probability", 0)
+        alloc  = s.get("allocation", "—")
+        out.append(
+            f"<div class='scenario {cls}'>"
+            f"<h3>{s.get('name','Scenario')}</h3>"
+            f"<div class='prob'>{prob}%</div>"
+            f"<div class='prob-bar'><div class='prob-fill' style='width:{prob}%'></div></div>"
+            f"<div class='sc-detail'>{s.get('logic','')}</div>"
+            f"<div class='sc-detail'><b>✅ Confirm:</b> {s.get('confirmation','—')}</div>"
+            f"<div class='sc-detail'><b>❌ Invalidate:</b> {s.get('invalidation','—')}</div>"
+            f"<span class='sc-alloc'>Allocation: {alloc}%</span>"
+            f"</div>"
+        )
+    return "\n".join(out)
+
+
+# ---------------------------------------------------------------------------
+# Regime — phase table rows
+# ---------------------------------------------------------------------------
+
+def render_phase_rows(phases):
+    out = []
+    for i, p in enumerate(phases, 1):
+        ret = p.get("return_pct", 0)
+        cls = "pos-t" if ret > 0 else ("neg-t" if ret < 0 else "")
+        out.append(
             f"<tr>"
-            f"<td>{r['sector']}</td>"
-            f"<td class='num {cls}'>{fmt_num(mfi, 1)}</td>"
-            f"<td class='num'>{fmt_num(r.get('mfi_change'), 1)}</td>"
+            f"<td class='fw'>{i}</td>"
+            f"<td>{p.get('start','?')} → {p.get('end','?')}</td>"
+            f"<td>{p.get('regime','—')}</td>"
+            f"<td class='tr'>{fmt(p.get('vni_end'), 1)}</td>"
+            f"<td class='tr {cls}'>{fmt_pct(ret, 1, sign=True)}</td>"
+            f"<td style='font-size:11px;color:#666;'>{p.get('divergence','—')}</td>"
             f"</tr>"
         )
-    return "\n".join(html)
+    return "\n".join(out) if out else "<tr><td colspan='6' style='color:#999;text-align:center;'>No phase data</td></tr>"
 
+
+# ---------------------------------------------------------------------------
+# Main render
+# ---------------------------------------------------------------------------
 
 def main():
     snapshot = json.loads((DATA_DIR / "latest.json").read_text())
-    tmpl = TEMPLATE.read_text()
+    tmpl     = TEMPLATE.read_text()
 
-    vni = snapshot["vnindex"]
-    universe = snapshot["universe"]
-    breadth = snapshot.get("breadth", {})
-    sectors = snapshot.get("sectors", [])
+    vni       = snapshot["vnindex"]
+    universe  = snapshot["universe"]
+    breadth   = snapshot.get("breadth", {})
+    sectors   = snapshot.get("sectors", [])
     sentiment = snapshot.get("sentiment", {})
-    regime = snapshot.get("regime", {})
+    regime    = snapshot.get("regime", {})
 
-    # Regime helpers
-    div = regime.get("divergence", {})
-    div_flag = regime.get("divergence_flag", "—")
-    div_class = "aligned"
-    if "Bearish" in div_flag:  div_class = "bearish"
-    elif "Bullish" in div_flag: div_class = "bullish"
-    gap = div.get("gap", 0)
-    gap_class = "gap-bearish" if gap > 12 else ("gap-bullish" if gap < -12 else "")
-    ind = regime.get("indicators", {})
-    cls = regime.get("classifications", {})
+    # Divergence detail
+    div    = regime.get("divergence", {})
+    detail = div.get("detail", {})
+    d5     = detail.get("5d", {})
+    d10    = detail.get("10d", {})
+    gap    = div.get("gap", 0)
 
-    html = tmpl
+    # Verdict helpers
+    v5_cls,  v5_txt  = div_verdict(d5.get("diverged", False),  d5.get("opposite_count", 0),  d5.get("total_internals", 4),  "5d")
+    v10_cls, v10_txt = div_verdict(d10.get("diverged", False), d10.get("opposite_count", 0), d10.get("total_internals", 4), "10d")
+    vg_cls,  vg_txt  = gap_verdict(gap)
+
+    # Exec div class
+    div_flag = regime.get("divergence_flag", "ALIGNED")
+    exec_div_cls = "danger" if "Bearish" in div_flag else ("ok" if "Bullish" in div_flag else "")
+
+    # Gap exec class
+    gap_exec_cls = "danger" if gap > 12 else ("ok" if gap < -12 else "")
+
+    # Severity class
+    sev = div.get("severity", "None")
+    sev_cls = "danger" if sev in ("Severe", "Moderate") else ("warn" if sev in ("Mild", "Early Warning") else "ok")
+
+    # Chart JSON from regime history
+    hist = regime.get("history", {})
+    chart_json = json.dumps(hist)
+
     replacements = {
         "{{latest_date}}":     snapshot["latest_date"],
         "{{generated_at}}":    datetime.now().strftime("%Y-%m-%d %H:%M ICT"),
-        "{{vni_close}}":       fmt_num(vni["close"], 2),
-        "{{vni_change}}":      fmt_num(vni["change"], 2),
-        "{{vni_change_pct}}":  fmt_pct(vni["change_pct"]),
-        "{{vni_color}}":       color_class(vni["change"]),
-        "{{universe_total}}":  fmt_num(universe["total_tickers"]),
-        "{{passed_count}}":    fmt_num(universe["liquid_passed"]),
+        # VNIndex header
+        "{{vni_close}}":       fmt(vni["close"], 2),
+        "{{vni_change}}":      fmt(vni["change"], 2),
+        "{{vni_change_pct}}":  fmt_pct(vni["change_pct"], 2, sign=True),
+        "{{vni_color}}":       color(vni["change"]),
+        # Overview
+        "{{universe_total}}":  fmt(universe["total_tickers"]),
+        "{{passed_count}}":    fmt(universe["liquid_passed"]),
         "{{ma20_pct}}":        fmt_pct(breadth.get("ma20_pct"), 1),
         "{{ma50_pct}}":        fmt_pct(breadth.get("ma50_pct"), 1),
         "{{ma100_pct}}":       fmt_pct(breadth.get("ma100_pct"), 1),
         "{{sentiment_summary}}": sentiment.get("summary", "—"),
-        "{{sentiment_label}}": sentiment.get("label", "—"),
-        "{{sentiment_class}}": sentiment.get("label", "").lower(),
-        "{{screened_rows}}":   render_screened_rows(snapshot.get("screened", [])),
-        "{{sector_rows}}":     render_sector_rows(sectors),
-        # Regime
+        "{{sentiment_label}}":   sentiment.get("label", "—"),
+        "{{sentiment_class}}":   sentiment.get("label", "").lower(),
+        # Exec summary
         "{{regime_name}}":          regime.get("regime_name", "—"),
         "{{regime_div_flag}}":       div_flag,
-        "{{regime_div_class}}":      div_class,
-        "{{regime_rsi21}}":          fmt_num(ind.get("rsi21"), 1),
-        "{{regime_trend}}":          cls.get("trend", "—"),
-        "{{regime_breadth}}":        fmt_num(ind.get("breadth_pct"), 1) + "%",
-        "{{regime_breadth_label}}":  cls.get("breadth", "—"),
-        "{{regime_nhnl}}":           fmt_num(ind.get("nhnl_rsi"), 1),
-        "{{regime_nhnl_label}}":     cls.get("nhnl", "—"),
-        "{{regime_mfi}}":            fmt_num(ind.get("mfi_rsi"), 1),
-        "{{regime_mfi_label}}":      cls.get("mfi", "—"),
-        "{{regime_ad}}":             fmt_num(ind.get("ad_rsi"), 1),
-        "{{regime_ad_label}}":       cls.get("ad", "—"),
-        "{{regime_gap}}":            f"{gap:+.1f}" if isinstance(gap, (int, float)) else "—",
-        "{{regime_gap_class}}":      gap_class,
-        "{{regime_internal_avg}}":   fmt_num(div.get("internal_avg"), 1),
-        "{{regime_div_severity}}":   div.get("severity", "—"),
+        "{{regime_exec_div_class}}": exec_div_cls,
+        "{{regime_dir5d}}":          "Yes" if div.get("dir_5d") else "No",
+        "{{regime_dir10d}}":         "Yes" if div.get("dir_10d") else "No",
+        "{{regime_gap}}":            f"{gap:+.1f}",
+        "{{regime_gap_exec_class}}": gap_exec_cls,
+        "{{regime_internal_avg}}":   fmt(div.get("internal_avg"), 1),
+        "{{regime_div_severity}}":   sev,
+        "{{regime_sev_class}}":      sev_cls,
         "{{regime_allocation}}":     str(regime.get("allocation", "—")),
-        "{{regime_dir5d}}":          "Y" if div.get("dir_5d") else "N",
-        "{{regime_dir10d}}":         "Y" if div.get("dir_10d") else "N",
+        "{{exec_warnings}}":         render_warnings(regime),
+        # Metric cards
+        "{{regime_metric_cards}}":   render_metric_cards(regime),
+        # Chart
+        "{{chart_json}}":            chart_json,
+        # Divergence checklist
+        "{{regime_div5d_rows}}":         render_div_direction_rows(d5),
+        "{{regime_div5d_verdict_class}}": v5_cls,
+        "{{regime_div5d_verdict_text}}":  v5_txt,
+        "{{regime_div10d_rows}}":         render_div_direction_rows(d10),
+        "{{regime_div10d_verdict_class}}": v10_cls,
+        "{{regime_div10d_verdict_text}}":  v10_txt,
+        "{{regime_gap_rows}}":            render_gap_rows(regime),
+        "{{regime_gap_verdict_class}}":   vg_cls,
+        "{{regime_gap_verdict_text}}":    vg_txt,
+        # Scenarios & phases
         "{{regime_scenario_cards}}": render_scenario_cards(regime.get("scenarios", [])),
+        "{{regime_phase_rows}}":     render_phase_rows(regime.get("phases", [])),
+        # Tables
+        "{{screened_rows}}":  render_screened_rows(snapshot.get("screened", [])),
+        "{{sector_rows}}":    render_sector_rows(sectors),
     }
+
+    html = tmpl
     for k, v in replacements.items():
         html = html.replace(k, str(v))
 
     DOCS.mkdir(exist_ok=True)
     (DOCS / "data").mkdir(exist_ok=True)
     (DOCS / "index.html").write_text(html)
-
-    # Copy snapshot for client access + archive
     shutil.copy(DATA_DIR / "latest.json", DOCS / "data" / "latest.json")
-    archive = DOCS / "data" / f"{snapshot['latest_date']}.json"
-    shutil.copy(DATA_DIR / "latest.json", archive)
-
+    shutil.copy(DATA_DIR / "latest.json", DOCS / "data" / f"{snapshot['latest_date']}.json")
     print(f"Rendered docs/index.html for {snapshot['latest_date']}")
 
 
