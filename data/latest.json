@@ -3,17 +3,17 @@
   "vnindex": {
     "close": 1921.6,
     "change": -3.86,
-    "change_pct": -0.2
+    "change_pct": 0
   },
   "universe": {
     "total_tickers": 633,
-    "liquid_passed": 28
+    "liquid_passed": 17
   },
   "screen_rules": {
     "price_gt_ema20": true,
     "ema20_gt_ema50": true,
     "rs_gt_rs_ma50": true,
-    "min_turnover_vnd": 1000000000
+    "min_turnover_vnd": 15000000000
   },
   "breadth": {
     "ma20_pct": 37.0,
@@ -22,228 +22,417 @@
   },
   "sentiment": {
     "label": "NEUTRAL",
-    "summary": "1 bullish, 1 mixed, 3 neutral across 5 groups. D\u00f2ng ti\u1ec1n lu\u00e2n chuy\u1ec3n v\u00e0o D\u1ea7u kh\u00ed, B\u0110S KCN."
+    "summary": "1 bullish, 1 mixed, 4 neutral across 6 groups. Money rotating into Oil & Gas and BDS-KCN; VN-Index targeting 2,000; leading stocks showing possible hidden distribution."
   },
   "sectors": [
     {
       "sector": "DauKhi",
       "mfi": 66.87,
-      "mfi_change": 3.7
+      "mfi_change": 3.7,
+      "mfi_change_10d": 19.12,
+      "tickers": [
+        "BSR",
+        "GAS",
+        "OIL",
+        "PLX",
+        "PVB",
+        "PVC",
+        "PVD",
+        "PVS"
+      ]
     },
     {
       "sector": "CaoSu",
       "mfi": 63.68,
-      "mfi_change": 9.07
+      "mfi_change": 9.07,
+      "mfi_change_10d": 13.96,
+      "tickers": [
+        "CSM",
+        "DPR",
+        "DRC",
+        "DRI",
+        "GVR",
+        "PHR"
+      ]
     },
     {
       "sector": "Gelex",
       "mfi": 62.53,
-      "mfi_change": 2.99
+      "mfi_change": 2.99,
+      "mfi_change_10d": 21.73,
+      "tickers": [
+        "GEE",
+        "GEX",
+        "VGC",
+        "VIX"
+      ]
     },
     {
       "sector": "VanTai",
       "mfi": 60.86,
-      "mfi_change": 1.49
+      "mfi_change": 1.49,
+      "mfi_change_10d": 5.13,
+      "tickers": [
+        "GMD",
+        "HAH",
+        "PVP",
+        "PVT",
+        "TCD",
+        "VIP",
+        "VOS",
+        "VSC",
+        "VTO",
+        "VTP"
+      ]
     },
     {
       "sector": "VinGroup",
       "mfi": 57.06,
-      "mfi_change": 1.02
+      "mfi_change": 1.02,
+      "mfi_change_10d": -12.78,
+      "tickers": [
+        "VHM",
+        "VIC",
+        "VRE"
+      ]
     },
     {
       "sector": "NganHang",
       "mfi": 53.6,
-      "mfi_change": 1.47
+      "mfi_change": 1.47,
+      "mfi_change_10d": 8.48,
+      "tickers": [
+        "ACB",
+        "BID",
+        "CTG",
+        "EIB",
+        "HDB",
+        "LPB",
+        "MBB",
+        "MSB",
+        "OCB",
+        "SHB",
+        "STB",
+        "TCB",
+        "TPB",
+        "VCB",
+        "VIB",
+        "VPB"
+      ]
     },
     {
       "sector": "BDS",
       "mfi": 49.49,
-      "mfi_change": 3.13
+      "mfi_change": 3.13,
+      "mfi_change_10d": 7.17,
+      "tickers": [
+        "CEO",
+        "DC4",
+        "DIG",
+        "DXG",
+        "EVG",
+        "HDC",
+        "HDG",
+        "HHS",
+        "HTN",
+        "KDH",
+        "KHG",
+        "NHA",
+        "NLG",
+        "NTL",
+        "NVL",
+        "PDR",
+        "SCR",
+        "TCH"
+      ]
     },
     {
       "sector": "ChungKhoan",
       "mfi": 48.93,
-      "mfi_change": 4.93
+      "mfi_change": 4.93,
+      "mfi_change_10d": 16.13,
+      "tickers": [
+        "BSI",
+        "CTS",
+        "HCM",
+        "MBS",
+        "SHS",
+        "SSI",
+        "VCI",
+        "VDS",
+        "VIX",
+        "VND"
+      ]
     },
     {
       "sector": "XayDung",
       "mfi": 45.57,
-      "mfi_change": 1.2
-    },
-    {
-      "sector": "ThucPham",
-      "mfi": 45.32,
-      "mfi_change": 2.08
+      "mfi_change": 1.2,
+      "mfi_change_10d": -5.79,
+      "tickers": [
+        "BCC",
+        "BCG",
+        "C69",
+        "CTD",
+        "DPG",
+        "FCN",
+        "HBC",
+        "HHV",
+        "HT1",
+        "IJC",
+        "KSB",
+        "LCG",
+        "PC1",
+        "PHC",
+        "PLC",
+        "PTB",
+        "TV2",
+        "VCG",
+        "VCS"
+      ]
     },
     {
       "sector": "VLXD",
       "mfi": 45.34,
-      "mfi_change": -0.73
+      "mfi_change": -0.73,
+      "mfi_change_10d": -5.76,
+      "tickers": [
+        "CII",
+        "FCN",
+        "HHV",
+        "LCG",
+        "VCG"
+      ]
+    },
+    {
+      "sector": "ThucPham",
+      "mfi": 45.32,
+      "mfi_change": 2.08,
+      "mfi_change_10d": 7.36,
+      "tickers": [
+        "LSS",
+        "MML",
+        "MSN",
+        "QNS",
+        "SBT",
+        "VNM"
+      ]
     },
     {
       "sector": "Thep",
       "mfi": 44.47,
-      "mfi_change": 1.44
+      "mfi_change": 1.44,
+      "mfi_change_10d": -11.87,
+      "tickers": [
+        "HPG",
+        "HSG",
+        "NKG",
+        "TLH",
+        "TVN",
+        "VGS"
+      ]
     },
     {
       "sector": "HangKhong",
       "mfi": 44.25,
-      "mfi_change": -0.18
+      "mfi_change": -0.18,
+      "mfi_change_10d": -2.0,
+      "tickers": [
+        "ACV",
+        "HVN",
+        "SCS",
+        "VJC"
+      ]
     },
     {
       "sector": "VietTel",
       "mfi": 42.66,
-      "mfi_change": 1.33
+      "mfi_change": 1.33,
+      "mfi_change_10d": 2.76,
+      "tickers": [
+        "CTR",
+        "VGI",
+        "VTP"
+      ]
     },
     {
       "sector": "BaoHiem",
       "mfi": 41.4,
-      "mfi_change": 2.74
+      "mfi_change": 2.74,
+      "mfi_change_10d": 3.85,
+      "tickers": [
+        "BIC",
+        "BMI",
+        "BVH",
+        "MIG"
+      ]
     },
     {
       "sector": "PhanBon",
       "mfi": 40.21,
-      "mfi_change": -0.83
+      "mfi_change": -0.83,
+      "mfi_change_10d": -4.29,
+      "tickers": [
+        "BFC",
+        "CSV",
+        "DCM",
+        "DGC",
+        "DPM",
+        "LAS"
+      ]
     },
     {
       "sector": "CongNghe",
       "mfi": 39.86,
-      "mfi_change": 0.1
+      "mfi_change": 0.1,
+      "mfi_change_10d": 0.54,
+      "tickers": [
+        "CMG",
+        "CTR",
+        "ELC",
+        "FOX",
+        "FPT",
+        "SGT",
+        "VGI"
+      ]
     },
     {
       "sector": "BanLe",
       "mfi": 36.99,
-      "mfi_change": 2.64
+      "mfi_change": 2.64,
+      "mfi_change_10d": -1.25,
+      "tickers": [
+        "DGW",
+        "FRT",
+        "HAX",
+        "MSN",
+        "MWG",
+        "PET",
+        "PNJ"
+      ]
     },
     {
       "sector": "ThuySan",
       "mfi": 36.8,
-      "mfi_change": -1.77
+      "mfi_change": -1.77,
+      "mfi_change_10d": -19.36,
+      "tickers": [
+        "ANV",
+        "ASM",
+        "CMX",
+        "FMC",
+        "IDI",
+        "VHC"
+      ]
     },
     {
       "sector": "BDS_KCN",
       "mfi": 30.02,
-      "mfi_change": -0.09
+      "mfi_change": -0.09,
+      "mfi_change_10d": -10.36,
+      "tickers": [
+        "BCM",
+        "D2D",
+        "DTD",
+        "IDC",
+        "KBC",
+        "LHG",
+        "NTC",
+        "SIP",
+        "SZC",
+        "TIP",
+        "VGC"
+      ]
     },
     {
       "sector": "Dien",
       "mfi": 29.54,
-      "mfi_change": 2.6
+      "mfi_change": 2.6,
+      "mfi_change_10d": 0.36,
+      "tickers": [
+        "GEG",
+        "HDG",
+        "NT2",
+        "POW",
+        "PPC",
+        "REE"
+      ]
     },
     {
       "sector": "DetMay",
       "mfi": 23.89,
-      "mfi_change": 1.68
+      "mfi_change": 1.68,
+      "mfi_change_10d": -12.03,
+      "tickers": [
+        "GIL",
+        "MSH",
+        "STK",
+        "TCM",
+        "TNG",
+        "VGT"
+      ]
     }
   ],
   "screened": [
     {
       "TICKER": "VIC",
       "PX_LAST": 228000,
-      "PRICE_PCT_1D": 1.79,
+      "PRICE_PCT_1D": -0.78,
       "EMA20": 208825.74,
       "EMA50": 183779.26,
       "ema20_gap_pct": 9.18,
       "ema50_gap_pct": 24.06,
       "rs_strength_pct": 23.79,
       "turnover_bn_vnd": 998.49,
-      "MKT_CAP": null
-    },
-    {
-      "TICKER": "ASP",
-      "PX_LAST": 7430,
-      "PRICE_PCT_1D": 0.95,
-      "EMA20": 6718.89,
-      "EMA50": 5983.2,
-      "ema20_gap_pct": 10.58,
-      "ema50_gap_pct": 24.18,
-      "rs_strength_pct": 20.55,
-      "turnover_bn_vnd": 1.77,
-      "MKT_CAP": null
+      "MKT_CAP": 1756975073.47
     },
     {
       "TICKER": "VHM",
       "PX_LAST": 158000,
-      "PRICE_PCT_1D": 2.6,
+      "PRICE_PCT_1D": 0.64,
       "EMA20": 148156.24,
       "EMA50": 132485.01,
       "ema20_gap_pct": 6.64,
       "ema50_gap_pct": 19.26,
       "rs_strength_pct": 18.64,
       "turnover_bn_vnd": 1079.28,
-      "MKT_CAP": null
+      "MKT_CAP": 648971096.63
     },
     {
       "TICKER": "PVP",
       "PX_LAST": 19850,
-      "PRICE_PCT_1D": 2.32,
+      "PRICE_PCT_1D": 4.47,
       "EMA20": 17772.09,
       "EMA50": 16615.14,
       "ema20_gap_pct": 11.69,
       "ema50_gap_pct": 19.47,
       "rs_strength_pct": 12.45,
       "turnover_bn_vnd": 23.17,
-      "MKT_CAP": null
+      "MKT_CAP": 2058493.67
     },
     {
       "TICKER": "DXS",
       "PX_LAST": 8500,
-      "PRICE_PCT_1D": 1.07,
+      "PRICE_PCT_1D": 5.2,
       "EMA20": 7730.37,
       "EMA50": 7498.87,
       "ema20_gap_pct": 9.96,
       "ema50_gap_pct": 13.35,
       "rs_strength_pct": 10.37,
       "turnover_bn_vnd": 27.29,
-      "MKT_CAP": null
+      "MKT_CAP": 4922376.55
     },
     {
       "TICKER": "VRE",
       "PX_LAST": 34000,
-      "PRICE_PCT_1D": 0.59,
+      "PRICE_PCT_1D": -0.44,
       "EMA20": 32498.22,
       "EMA50": 30491.62,
       "ema20_gap_pct": 4.62,
       "ema50_gap_pct": 11.51,
       "rs_strength_pct": 9.54,
       "turnover_bn_vnd": 359.85,
-      "MKT_CAP": null
-    },
-    {
-      "TICKER": "TCO",
-      "PX_LAST": 15500,
-      "PRICE_PCT_1D": 1.31,
-      "EMA20": 14988.05,
-      "EMA50": 13488.64,
-      "ema20_gap_pct": 3.42,
-      "ema50_gap_pct": 14.92,
-      "rs_strength_pct": 9.35,
-      "turnover_bn_vnd": 6.24,
-      "MKT_CAP": null
-    },
-    {
-      "TICKER": "TCI",
-      "PX_LAST": 11550,
-      "PRICE_PCT_1D": 0.87,
-      "EMA20": 10799.77,
-      "EMA50": 10152.53,
-      "ema20_gap_pct": 6.95,
-      "ema50_gap_pct": 13.77,
-      "rs_strength_pct": 9.09,
-      "turnover_bn_vnd": 2.44,
-      "MKT_CAP": null
-    },
-    {
-      "TICKER": "HII",
-      "PX_LAST": 6550,
-      "PRICE_PCT_1D": 0.92,
-      "EMA20": 6134.43,
-      "EMA50": 5798.19,
-      "ema20_gap_pct": 6.77,
-      "ema50_gap_pct": 12.97,
-      "rs_strength_pct": 8.33,
-      "turnover_bn_vnd": 2.12,
-      "MKT_CAP": null
+      "MKT_CAP": 77258825.94
     },
     {
       "TICKER": "HNG",
@@ -255,127 +444,139 @@
       "ema50_gap_pct": 12.98,
       "rs_strength_pct": 8.16,
       "turnover_bn_vnd": 44.45,
-      "MKT_CAP": null
+      "MKT_CAP": 8425009.6
     },
     {
       "TICKER": "HCM",
       "PX_LAST": 28750,
-      "PRICE_PCT_1D": 1.59,
+      "PRICE_PCT_1D": 1.77,
       "EMA20": 27173.91,
       "EMA50": 25607.07,
       "ema20_gap_pct": 5.8,
       "ema50_gap_pct": 12.27,
       "rs_strength_pct": 7.63,
       "turnover_bn_vnd": 365.51,
-      "MKT_CAP": null
+      "MKT_CAP": 31048754.29
     },
     {
       "TICKER": "MSB",
       "PX_LAST": 13900,
-      "PRICE_PCT_1D": 1.83,
+      "PRICE_PCT_1D": 0.36,
       "EMA20": 13000.35,
       "EMA50": 12495.67,
       "ema20_gap_pct": 6.92,
       "ema50_gap_pct": 11.24,
       "rs_strength_pct": 5.88,
       "turnover_bn_vnd": 168.72,
-      "MKT_CAP": null
+      "MKT_CAP": 43368000
     },
     {
       "TICKER": "PHR",
       "PX_LAST": 71300,
-      "PRICE_PCT_1D": 2.59,
+      "PRICE_PCT_1D": 6.9,
       "EMA20": 64172.87,
       "EMA50": 62733.19,
       "ema20_gap_pct": 11.11,
       "ema50_gap_pct": 13.66,
       "rs_strength_pct": 5.64,
       "turnover_bn_vnd": 22.43,
-      "MKT_CAP": null
-    },
-    {
-      "TICKER": "IDP",
-      "PX_LAST": 295600,
-      "PRICE_PCT_1D": 1.06,
-      "EMA20": 275787.53,
-      "EMA50": 260042.25,
-      "ema20_gap_pct": 7.18,
-      "ema50_gap_pct": 13.67,
-      "rs_strength_pct": 5.01,
-      "turnover_bn_vnd": 1.67,
-      "MKT_CAP": null
-    },
-    {
-      "TICKER": "DRI",
-      "PX_LAST": 15100,
-      "PRICE_PCT_1D": 1.0,
-      "EMA20": 14016.72,
-      "EMA50": 13496.93,
-      "ema20_gap_pct": 7.73,
-      "ema50_gap_pct": 11.88,
-      "rs_strength_pct": 4.49,
-      "turnover_bn_vnd": 11.8,
-      "MKT_CAP": null
+      "MKT_CAP": 9661092.82
     },
     {
       "TICKER": "NVL",
       "PX_LAST": 17300,
-      "PRICE_PCT_1D": 1.17,
+      "PRICE_PCT_1D": 3.9,
       "EMA20": 17162.8,
       "EMA50": 15963.11,
       "ema20_gap_pct": 0.8,
       "ema50_gap_pct": 8.37,
       "rs_strength_pct": 4.44,
       "turnover_bn_vnd": 602.75,
-      "MKT_CAP": null
-    },
-    {
-      "TICKER": "HTN",
-      "PX_LAST": 8200,
-      "PRICE_PCT_1D": 0.61,
-      "EMA20": 7911.81,
-      "EMA50": 7653.76,
-      "ema20_gap_pct": 3.64,
-      "ema50_gap_pct": 7.13,
-      "rs_strength_pct": 4.35,
-      "turnover_bn_vnd": 2.3,
-      "MKT_CAP": null
+      "MKT_CAP": 38656789
     },
     {
       "TICKER": "GVR",
       "PX_LAST": 37750,
-      "PRICE_PCT_1D": 1.34,
+      "PRICE_PCT_1D": 4.28,
       "EMA20": 35003.15,
       "EMA50": 34361.73,
       "ema20_gap_pct": 7.85,
       "ema50_gap_pct": 9.86,
       "rs_strength_pct": 2.86,
       "turnover_bn_vnd": 146.14,
-      "MKT_CAP": null
-    },
-    {
-      "TICKER": "C32",
-      "PX_LAST": 12950,
-      "PRICE_PCT_1D": 0.78,
-      "EMA20": 12948.72,
-      "EMA50": 12125.58,
-      "ema20_gap_pct": 0.01,
-      "ema50_gap_pct": 6.8,
-      "rs_strength_pct": 2.65,
-      "turnover_bn_vnd": 1.6,
-      "MKT_CAP": null
+      "MKT_CAP": 151000000
     },
     {
       "TICKER": "BMP",
       "PX_LAST": 157200,
-      "PRICE_PCT_1D": 0.51,
+      "PRICE_PCT_1D": 0.13,
       "EMA20": 150850.11,
       "EMA50": 147592.69,
       "ema20_gap_pct": 4.21,
       "ema50_gap_pct": 6.51,
       "rs_strength_pct": 2.56,
       "turnover_bn_vnd": 32.92,
-      "MKT_CAP": null
+      "MKT_CAP": 12868539.45
+    },
+    {
+      "TICKER": "STB",
+      "PX_LAST": 72900,
+      "PRICE_PCT_1D": -0.95,
+      "EMA20": 69769.3,
+      "EMA50": 66405.85,
+      "ema20_gap_pct": 4.49,
+      "ema50_gap_pct": 9.78,
+      "rs_strength_pct": 2.16,
+      "turnover_bn_vnd": 457.24,
+      "MKT_CAP": 137432225.7
+    },
+    {
+      "TICKER": "BSR",
+      "PX_LAST": 31750,
+      "PRICE_PCT_1D": 4.96,
+      "EMA20": 27545.21,
+      "EMA50": 26924.89,
+      "ema20_gap_pct": 15.27,
+      "ema50_gap_pct": 17.92,
+      "rs_strength_pct": 2.13,
+      "turnover_bn_vnd": 418.98,
+      "MKT_CAP": 158981765.03
+    },
+    {
+      "TICKER": "HHP",
+      "PX_LAST": 14450,
+      "PRICE_PCT_1D": 0,
+      "EMA20": 13582.22,
+      "EMA50": 13227.75,
+      "ema20_gap_pct": 6.39,
+      "ema50_gap_pct": 9.24,
+      "rs_strength_pct": 1.05,
+      "turnover_bn_vnd": 17.08,
+      "MKT_CAP": 1250710.26
+    },
+    {
+      "TICKER": "DXG",
+      "PX_LAST": 16050,
+      "PRICE_PCT_1D": 0.31,
+      "EMA20": 15441.87,
+      "EMA50": 15185.47,
+      "ema20_gap_pct": 3.94,
+      "ema50_gap_pct": 5.69,
+      "rs_strength_pct": 0.8,
+      "turnover_bn_vnd": 241.71,
+      "MKT_CAP": 17853766.23
+    },
+    {
+      "TICKER": "VIX",
+      "PX_LAST": 18750,
+      "PRICE_PCT_1D": -0.53,
+      "EMA20": 17918.38,
+      "EMA50": 17772.89,
+      "ema20_gap_pct": 4.64,
+      "ema50_gap_pct": 5.5,
+      "rs_strength_pct": 0.62,
+      "turnover_bn_vnd": 729.56,
+      "MKT_CAP": 45942895.72
     }
   ],
   "regime": {
@@ -623,7 +824,7 @@
       "mfi": "Above Average",
       "ad": "Below Average"
     },
-    "regime_name": "Strong Uptrend \u2013 Below Average (40.9%) \u2013 NHNL Weak \u00b7 MFI Above Average \u00b7 A/D Below Average",
+    "regime_name": "Strong Uptrend – Below Average (40.9%) – NHNL Weak · MFI Above Average · A/D Below Average",
     "divergence_flag": "DIVERGENT (Bearish, Dir: 10d, Gap +20.4)",
     "divergence": {
       "dir_5d": false,
@@ -688,7 +889,7 @@
       {
         "start": "2026-04-01",
         "end": "2026-04-03",
-        "regime": "Mild Sideways Down \u2013 Oversold (20.9%)",
+        "regime": "Mild Sideways Down – Oversold (20.9%)",
         "vni_end": 1684.0,
         "return_pct": -1.11,
         "divergence": "Insufficient data"
@@ -696,7 +897,7 @@
       {
         "start": "2026-04-08",
         "end": "2026-04-13",
-        "regime": "Mild Sideways Up \u2013 Very Narrow (37.9%)",
+        "regime": "Mild Sideways Up – Very Narrow (37.9%)",
         "vni_end": 1759.0,
         "return_pct": 4.86,
         "divergence": "Insufficient data"
@@ -704,7 +905,7 @@
       {
         "start": "2026-04-14",
         "end": "2026-04-17",
-        "regime": "Uptrend \u2013 Very Narrow (39.6%)",
+        "regime": "Uptrend – Very Narrow (39.6%)",
         "vni_end": 1817.2,
         "return_pct": 3.31,
         "divergence": "Insufficient data"
@@ -712,7 +913,7 @@
       {
         "start": "2026-04-20",
         "end": "2026-05-15",
-        "regime": "Strong Uptrend \u2013 Below Average (40.9%)",
+        "regime": "Strong Uptrend – Below Average (40.9%)",
         "vni_end": 1921.6,
         "return_pct": 5.75,
         "divergence": "Dir 5d: N | 10d: Y | Gap +20.4"
