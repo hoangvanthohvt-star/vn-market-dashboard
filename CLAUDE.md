@@ -40,7 +40,6 @@ Combine all of the above into `data/latest.json` with this structure:
 ```
 latest_date, vnindex, universe, screen_rules, breadth, sector_analysis, screened, regime, nhnl_chart, breadth_chart
 ```
-Compute `vnindex.change_pct` from the last two VNIndex closes if the raw value is 0 or missing.
 
 ### Step 7 — Render
 Run: `python3 scripts/render.py`
