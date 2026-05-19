@@ -62,10 +62,13 @@ This writes `docs/index.html`, `docs/data/latest.json`, and `docs/data/YYYY-MM-D
 git add data/latest.json docs/
 git commit -m "Daily update YYYY-MM-DD"
 git push -u origin <current-branch>
+git push origin <current-branch>:main
 ```
 
+Always push to **both** the current branch and `main`. GitHub Pages serves from `main`, so pushing only to the feature branch will not update the live website.
+
 ## Branch
-Always push to whatever branch is currently checked out. Do not switch branches.
+Always push to whatever branch is currently checked out AND to `main`. Do not switch branches.
 
 ## Notes
 - If the database has no new data since the last run (e.g. weekend), still re-run and push — it refreshes the "generated at" timestamp on the site.
