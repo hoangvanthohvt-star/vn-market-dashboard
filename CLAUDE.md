@@ -12,6 +12,7 @@ When asked to run the daily update, do the following steps in order:
 Run `scripts/screening.py` via the `execute_python` MCP tool.
 Copy the code from `scripts/screening.py` exactly and execute it.
 Capture: `latest_date`, `vnindex`, `universe`, `screen_rules`, `screened`.
+Universe is the sector watchlist (~111 tickers) — single query, no timeout risk.
 
 ### Step 2 — Market breadth
 ~~Removed~~ — breadth data now comes entirely from the Google Doc via the regime step.
