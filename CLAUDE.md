@@ -32,8 +32,12 @@ of daily `PX_LAST` from `Market_Data` since 2025-10-01. For each sector output:
 `sector`, `strength` (mean RSI14), `strength_10d_chg`, `breadth_pct` (% tickers RSI14 > 50), `tickers` (top 3).
 
 ### Step 5 — NHNL chart data
-Keep the existing `data/latest.json` nhnl_chart and breadth_chart as-is unless the
-latest_date has advanced, in which case append the new data point.
+`nhnl_chart` comes directly from the regime output — no separate calculation needed.
+Use `regime["nhnl_history"]` which already contains `dates`, `nhnl` (absolute level), and `vnindex`,
+all sourced from the Google Doc. Just assign it:
+```python
+nhnl_chart = regime["nhnl_history"]
+```
 
 ### Step 6 — Assemble data/latest.json
 Combine all of the above into `data/latest.json` with this structure:
