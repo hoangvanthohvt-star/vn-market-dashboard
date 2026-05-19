@@ -137,13 +137,13 @@ def render_overview_cards(regime, screened, sector_analysis=None):
     ind = regime.get("indicators", {}) if regime else {}
     def _ind_row(label, val, fmt=".1f", suffix=""):
         if val is None:
-            return f"<div style='display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'><span style='color:#666;'>{label}</span><span style='font-weight:700;'>—</span></div>"
+            return f"<div style='display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'><span style='color:#111;font-weight:600;'>{label}</span><span style='font-weight:700;'>—</span></div>"
         v = float(val)
         cls = "#00BF6F" if v > 60 else ("#FF671B" if v >= 45 else "#FF0037")
         return (
             f"<div style='display:flex;justify-content:space-between;align-items:center;"
             f"padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'>"
-            f"<span style='color:#444;'>{label}</span>"
+            f"<span style='color:#111;font-weight:600;'>{label}</span>"
             f"<span style='font-weight:700;color:{cls};'>{v:{fmt}}{suffix}</span>"
             f"</div>"
         )
