@@ -430,7 +430,6 @@ def main():
 
     vni       = snapshot["vnindex"]
     universe  = snapshot["universe"]
-    breadth   = snapshot.get("breadth", {})
     regime    = snapshot.get("regime", {})
 
     # Divergence detail

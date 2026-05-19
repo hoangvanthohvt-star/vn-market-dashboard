@@ -14,9 +14,8 @@ Copy the code from `scripts/screening.py` exactly and execute it.
 Capture: `latest_date`, `vnindex`, `universe`, `screen_rules`, `screened`.
 
 ### Step 2 — Market breadth
-Call `supabase_market_breadth` with `days=90`.
-From the result, use only `ma20_pct`, `ma50_pct`, `ma100_pct` from the latest row (for the breadth snapshot card).
-Do NOT use the full rows for the breadth chart — that comes from the Google Doc (see Step 5).
+~~Removed~~ — breadth data now comes entirely from the Google Doc via the regime step.
+Skip this step; do not call `supabase_market_breadth`.
 
 ### Step 3 — Regime indicators
 Fetch the Google Doc as plain text using this export URL:
@@ -42,7 +41,7 @@ breadth_chart = regime["breadth_history"] # keys: dates, breadth_pct, vnindex
 ### Step 6 — Assemble data/latest.json
 Combine all of the above into `data/latest.json` with this structure:
 ```
-latest_date, vnindex, universe, screen_rules, breadth, sector_analysis, screened, regime, nhnl_chart, breadth_chart
+latest_date, vnindex, universe, screen_rules, sector_analysis, screened, regime, nhnl_chart, breadth_chart
 ```
 
 ### Step 7 — Render
