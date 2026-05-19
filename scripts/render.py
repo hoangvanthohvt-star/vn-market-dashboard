@@ -163,10 +163,11 @@ def render_overview_cards(regime, screened, sector_analysis=None):
             f"<span><span class='{s_cls}' style='font-weight:700;margin-right:6px;'>RSI {strength:.1f}</span>{chg10_str}</span>"
             f"</div>"
         )
+    _rows2_html = "".join(rows2) if rows2 else "<span style='color:#999'>—</span>"
     card2 = (
         f"<div class='ov-card'>"
         f"<div class='ov-label'>Top 3 Strongest Sectors · RSI14</div>"
-        f"<div style='margin-top:8px;'>{''.join(rows2) if rows2 else '<span style=\"color:#999\">—</span>'}</div>"
+        f"<div style='margin-top:8px;'>{_rows2_html}</div>"
         f"</div>"
     )
 
