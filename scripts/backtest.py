@@ -3,7 +3,7 @@ Framework 3 v1.0 backtester — Equal-Weight Tiered System for VN equities.
 
 Signal  : daily close > 3%, volume > 30% vs 20d avg, close > MA50.
           Multiple candidates on same day → sorted by daily return desc.
-Entry   : next-day ATO (open price). Size: 10% of initial portfolio per position.
+Entry   : signal-day ATC (close price). Size: 10% of initial portfolio per position.
 Tiers   : T1 4 slots (always open)
           T2 3 slots (unlock: T1 full AND T1-avg-P&L > 1.5%)
           T3 3 slots (unlock: T2 full AND T2-avg-P&L > 1.5%)
