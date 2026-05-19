@@ -142,7 +142,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="header-top">
     <div>
       <h1>Market Regime</h1>
-      <div class="subtitle">Breadth · Regime · Screener · generated 2026-05-19 04:28 ICT</div>
+      <div class="subtitle">Breadth · Regime · Screener · generated 2026-05-19 06:25 ICT</div>
     </div>
     <div class="header-right">
       <div class="date-badge">2026-05-18</div>
@@ -402,14 +402,24 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   if(!N||!N.dates) return;
   const ctx = document.getElementById('nhnlChart').getContext('2d');
 
+  function calcMA(arr, period) {
+    return arr.map((_, i) => {
+      if (i < period - 1) return null;
+      const slice = arr.slice(i - period + 1, i + 1).filter(v => v != null);
+      return slice.length ? slice.reduce((a, b) => a + b, 0) / slice.length : null;
+    });
+  }
+
   function makeChart(dates, nhnl, vni) {
     const colors = nhnl.map(v => v >= 0 ? 'rgba(0,191,111,0.75)' : 'rgba(255,0,55,0.75)');
+    const ma20 = calcMA(nhnl, 20);
     return new Chart(ctx, {
       data: {
         labels: dates,
         datasets: [
-          {type:'bar', label:'NHNL', data:nhnl, backgroundColor:colors, borderWidth:0, yAxisID:'y', order:2},
-          {type:'line', label:'VNIndex (right)', data:vni, borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:1}
+          {type:'bar',  label:'NHNL',           data:nhnl, backgroundColor:colors, borderWidth:0, yAxisID:'y', order:2},
+          {type:'line', label:'NHNL MA20',       data:ma20, borderColor:'#FF671B', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3, yAxisID:'y', order:1, hidden:true},
+          {type:'line', label:'VNIndex (right)', data:vni,  borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:0}
         ]
       },
       options: {
