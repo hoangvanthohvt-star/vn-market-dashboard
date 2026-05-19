@@ -1,0 +1,21 @@
+name: Daily Market Update
+
+on:
+  schedule:
+    - cron: '30 8 * * 1-5'   # 3:30pm ICT (Mon-Fri) — regime data fresh
+    - cron: '0 12 * * 1-5'   # 7:00pm ICT (Mon-Fri) — stock prices fresh
+  workflow_dispatch:           # allow manual trigger from GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run daily update via Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: "Run the daily update as described in CLAUDE.md. Follow all 8 steps in order."
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
