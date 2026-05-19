@@ -133,29 +133,43 @@ def render_sector_analysis_rows(rows):
 
 
 def render_overview_cards(regime, screened, sector_analysis=None):
-    # Card 1 — Allocation
-    alloc = regime.get("allocation", "—") if regime else "—"
-    regime_name = regime.get("regime_name", "—") if regime else "—"
-    div = regime.get("divergence", {}) if regime else {}
-    sev = div.get("severity", "None")
-    alloc_color = "#00BF6F" if int(alloc) >= 70 else ("#FF671B" if int(alloc) >= 40 else "#FF0037") if str(alloc).isdigit() else "#97999B"
+    # Card 1 — Market Indicators
+    ind = regime.get("indicators", {}) if regime else {}
+    def _ind_row(label, val, fmt=".1f", suffix=""):
+        if val is None:
+            return f"<div style='display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'><span style='color:#666;'>{label}</span><span style='font-weight:700;'>—</span></div>"
+        v = float(val)
+        cls = "#00BF6F" if v > 60 else ("#FF671B" if v >= 45 else "#FF0037")
+        return (
+            f"<div style='display:flex;justify-content:space-between;align-items:center;"
+            f"padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'>"
+            f"<span style='color:#444;'>{label}</span>"
+            f"<span style='font-weight:700;color:{cls};'>{v:{fmt}}{suffix}</span>"
+            f"</div>"
+        )
+    ind_rows = "".join([
+        _ind_row("RSI 21D",      ind.get("rsi21")),
+        _ind_row("Breadth % &gt; MA50", ind.get("breadth_pct"), suffix="%"),
+        _ind_row("NHNL RSI",     ind.get("nhnl_rsi")),
+        _ind_row("MFI RSI",      ind.get("mfi_rsi")),
+        _ind_row("A/D RSI",      ind.get("ad_rsi")),
+    ])
     card1 = (
         f"<div class='ov-card'>"
-        f"<div class='ov-label'>Allocation Recommendation</div>"
-        f"<div class='ov-value' style='color:{alloc_color};'>{alloc}%</div>"
-        f"<div class='ov-meta'>{regime_name}"
-        f"{' · ' + sev if sev and sev != 'None' else ''}</div>"
+        f"<div class='ov-label'>Market Indicators</div>"
+        f"<div style='margin-top:8px;'>{ind_rows}</div>"
         f"</div>"
     )
 
-    # Card 2 — Top 3 from sector_analysis (RSI14 strength)
-    top3_src = sorted(sector_analysis or [], key=lambda x: x.get("strength", 0), reverse=True)[:3]
+    # Card 2 — Top 5 from sector_analysis (RSI14 strength)
+    top5_src = sorted(sector_analysis or [], key=lambda x: x.get("strength", 0), reverse=True)[:5]
     rows2 = []
-    for s in top3_src:
+    for s in top5_src:
         strength = s.get("strength", 0)
         chg10 = s.get("strength_10d_chg")
         s_cls = "pos-t" if strength > 55 else ("warn-t" if strength >= 45 else "neg-t")
-        chg10_str = f'<span style="font-size:10px;color:{"#00BF6F" if chg10 and chg10>0 else "#FF0037"};">{chg10:+.1f} 10d</span>' if chg10 is not None else ""
+        chg10_color = "#00BF6F" if chg10 and chg10 > 0 else "#FF0037"
+        chg10_str = f'<span style="font-size:10px;color:{chg10_color};">{chg10:+.1f} 10d</span>' if chg10 is not None else ""
         rows2.append(
             f"<div style='display:flex;justify-content:space-between;align-items:center;"
             f"padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'>"
@@ -166,7 +180,7 @@ def render_overview_cards(regime, screened, sector_analysis=None):
     _rows2_html = "".join(rows2) if rows2 else "<span style='color:#999'>—</span>"
     card2 = (
         f"<div class='ov-card'>"
-        f"<div class='ov-label'>Top 3 Strongest Sectors · RSI14</div>"
+        f"<div class='ov-label'>Top 5 Strongest Sectors · RSI14</div>"
         f"<div style='margin-top:8px;'>{_rows2_html}</div>"
         f"</div>"
     )
