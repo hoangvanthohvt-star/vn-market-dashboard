@@ -89,16 +89,18 @@ def render_screened_rows(rows):
         else:
             ema_gap = None
         sector = _TICKER_SECTOR.get(r["TICKER"], "")
+        tvnd = r.get("turnover_bn_vnd")
+        tvnd_str = f"{float(tvnd):.1f}" if tvnd is not None else "—"
         out.append(
             f"<tr>"
             f"<td class='fw ticker-link'>{r['TICKER']}</td>"
             f"<td class='fw'>{sector}</td>"
             f"<td class='tr'>{fmt(r['PX_LAST'])}</td>"
-            f"<td class='tr {cls}'>{fmt_pct(chg, sign=True)}</td>"
-            f"<td class='tr pos-t'>{fmt_pct(g20, sign=True)}</td>"
-            f"<td class='tr pos-t'>{fmt_pct(ema_gap, sign=True)}</td>"
-            f"<td class='tr pos-t'>{fmt_pct(rs, sign=True)}</td>"
-            f"<td class='tr'>{fmt(r.get('turnover_bn_vnd'), 1)}</td>"
+            f"<td class='tr {cls}'>{fmt_pct(chg, digits=1, sign=True)}</td>"
+            f"<td class='tr pos-t'>{fmt_pct(g20, digits=1, sign=True)}</td>"
+            f"<td class='tr pos-t'>{fmt_pct(ema_gap, digits=1, sign=True)}</td>"
+            f"<td class='tr pos-t'>{fmt_pct(rs, digits=1, sign=True)}</td>"
+            f"<td class='tr'>{tvnd_str}</td>"
             f"</tr>"
         )
     return "\n".join(out)
