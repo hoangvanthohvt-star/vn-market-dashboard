@@ -4,6 +4,12 @@
 A static daily dashboard for Vietnamese stock market analysis, hosted on GitHub Pages.
 Updated every morning at 06:30 ICT by a scheduled Claude Code session.
 
+## Session start — auto-run
+**When a new Claude Code session starts in this project directory, immediately run the
+daily update (Steps 1–8 below) without waiting for user input.**
+This applies both to cloud-scheduled sessions and to manual sessions opened on the local
+Windows laptop. Do not greet the user first — just start the update.
+
 ## How to run the daily update
 
 When asked to run the daily update, do the following steps in order:
