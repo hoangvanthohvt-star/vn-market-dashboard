@@ -424,11 +424,18 @@ def analyze(rows):
         "vnindex": [r["vnindex"]         for r in rows],
     }
 
+    breadth_history = {
+        "dates":       [r["date"]          for r in rows],
+        "breadth_pct": [r["breadth_pct"]   for r in rows],
+        "vnindex":     [r["vnindex"]       for r in rows],
+    }
+
     return {
-        "date":         latest["date"],
-        "vnindex":      latest["vnindex"],
-        "history":      history,
-        "nhnl_history": nhnl_history,
+        "date":            latest["date"],
+        "vnindex":         latest["vnindex"],
+        "history":         history,
+        "nhnl_history":    nhnl_history,
+        "breadth_history": breadth_history,
         "indicators": {
             "rsi21":       latest["rsi21"],
             "rsi70":       latest.get("rsi70"),

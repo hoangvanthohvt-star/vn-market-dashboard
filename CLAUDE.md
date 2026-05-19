@@ -15,8 +15,8 @@ Capture: `latest_date`, `vnindex`, `universe`, `screen_rules`, `screened`.
 
 ### Step 2 — Market breadth
 Call `supabase_market_breadth` with `days=90`.
-From the result, use `ma20_pct`, `ma50_pct`, `ma100_pct` from the latest row.
-Also keep the full `rows` array for the breadth chart (use dates + ma50_pct + vnindex).
+From the result, use only `ma20_pct`, `ma50_pct`, `ma100_pct` from the latest row (for the breadth snapshot card).
+Do NOT use the full rows for the breadth chart — that comes from the Google Doc (see Step 5).
 
 ### Step 3 — Regime indicators
 Fetch the Google Doc as plain text using this export URL:
@@ -31,12 +31,12 @@ Run via `execute_python`: for each sector in `render.py`'s `_SECTOR_TICKERS`, co
 of daily `PX_LAST` from `Market_Data` since 2025-10-01. For each sector output:
 `sector`, `strength` (mean RSI14), `strength_10d_chg`, `breadth_pct` (% tickers RSI14 > 50), `tickers` (top 3).
 
-### Step 5 — NHNL chart data
-`nhnl_chart` comes directly from the regime output — no separate calculation needed.
-Use `regime["nhnl_history"]` which already contains `dates`, `nhnl` (absolute level), and `vnindex`,
-all sourced from the Google Doc. Just assign it:
+### Step 5 — Chart data (NHNL and Breadth)
+Both `nhnl_chart` and `breadth_chart` come directly from the regime output — no separate calculation needed.
+The Google Doc is the source of truth for both. Just assign:
 ```python
-nhnl_chart = regime["nhnl_history"]
+nhnl_chart    = regime["nhnl_history"]    # keys: dates, nhnl, vnindex
+breadth_chart = regime["breadth_history"] # keys: dates, breadth_pct, vnindex
 ```
 
 ### Step 6 — Assemble data/latest.json
