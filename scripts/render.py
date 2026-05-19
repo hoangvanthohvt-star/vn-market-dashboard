@@ -118,7 +118,7 @@ def render_sector_analysis_rows(rows):
 
         chg_str = f"{chg:+.1f}" if chg is not None else "—"
         brd_str = f"{brd:.0f}%" if brd is not None else "—"
-        ticker_str = " · ".join(tickers)
+        ticker_str = " · ".join(tickers) if tickers else "—"
 
         out.append(
             f"<tr>"

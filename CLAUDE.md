@@ -27,9 +27,11 @@ Use `urllib.request.urlopen` or `requests.get` to fetch the text, then pipe it i
 `scripts/regime.py` via `subprocess.run` to get the regime JSON.
 
 ### Step 4 — Sector RSI14 analysis
-Run via `execute_python`: for each sector in `render.py`'s `_SECTOR_TICKERS`, compute RSI14
-of daily `PX_LAST` from `Market_Data` since 2025-10-01. For each sector output:
-`sector`, `strength` (mean RSI14), `strength_10d_chg`, `breadth_pct` (% tickers RSI14 > 50), `tickers` (top 3).
+Run `scripts/sector_rsi.py` via the `execute_python` MCP tool.
+Copy the code from `scripts/sector_rsi.py` exactly and execute it.
+Capture: `sector_analysis` (list sorted by strength desc).
+Each entry has: `sector`, `strength` (mean RSI14), `strength_10d_chg`,
+`breadth_pct` (% tickers RSI14 > 50), `tickers` (all tickers, sorted by RSI14 desc).
 
 ### Step 5 — Chart data (NHNL and Breadth)
 Both `nhnl_chart` and `breadth_chart` come directly from the regime output — no separate calculation needed.
