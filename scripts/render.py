@@ -505,6 +505,7 @@ def main():
         "{{chart_json}}":            chart_json,
         "{{nhnl_chart_json}}":       json.dumps(snapshot.get("nhnl_chart", {})),
         "{{breadth_chart_json}}":    json.dumps(snapshot.get("breadth_chart", {})),
+        "{{backtest_json}}":         json.dumps(snapshot.get("backtest", {})),
         # Divergence checklist
         "{{regime_div5d_rows}}":         render_div_direction_rows(d5),
         "{{regime_div5d_verdict_class}}": v5_cls,

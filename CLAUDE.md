@@ -14,6 +14,12 @@ Copy the code from `scripts/screening.py` exactly and execute it.
 Capture: `latest_date`, `vnindex`, `universe`, `screen_rules`, `screened`.
 Universe is the sector watchlist (~111 tickers) — single query, no timeout risk.
 
+### Step 1b — Breakout backtest
+Run `scripts/backtest.py` via the `execute_python` MCP tool.
+Copy the code from `scripts/backtest.py` exactly and execute it.
+Capture: `dates`, `model_cumret`, `vnindex_cumret`, `stats`.
+Signal: close >3%, volume >30% vs 20d avg, price >MA50. Hold 20d, max 10 positions.
+
 ### Step 2 — Market breadth
 ~~Removed~~ — breadth data now comes entirely from the Google Doc via the regime step.
 Skip this step; do not call `supabase_market_breadth`.
@@ -44,7 +50,7 @@ breadth_chart = regime["breadth_history"] # keys: dates, breadth_pct, vnindex
 ### Step 6 — Assemble data/latest.json
 Combine all of the above into `data/latest.json` with this structure:
 ```
-latest_date, vnindex, universe, screen_rules, sector_analysis, screened, regime, nhnl_chart, breadth_chart
+latest_date, vnindex, universe, screen_rules, sector_analysis, screened, regime, nhnl_chart, breadth_chart, backtest
 ```
 
 ### Step 7 — Render
