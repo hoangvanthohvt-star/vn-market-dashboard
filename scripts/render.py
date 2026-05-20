@@ -13,7 +13,7 @@ Output:
 
 import json
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 ROOT     = Path(__file__).resolve().parent.parent
@@ -478,7 +478,7 @@ def main():
 
     replacements = {
         "{{latest_date}}":     snapshot["latest_date"],
-        "{{generated_at}}":    datetime.now().strftime("%Y-%m-%d %H:%M ICT"),
+        "{{generated_at}}":    (datetime.utcnow() + timedelta(hours=7)).strftime("%Y %b %d - %H:%M"),
         # VNIndex header
         "{{vni_close}}":       fmt(vni["close"], 2),
         "{{vni_change}}":      fmt(vni["change"], 2),
