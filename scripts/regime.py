@@ -52,7 +52,8 @@ def parse_doc(text):
                 "nhnl_rsi":    float(parts[5]),
                 "mfi_rsi":     float(parts[6]),
                 "ad_rsi":      float(parts[7]) if len(parts) > 7 else None,
-                "mfi_abs":     float(parts[8])  if len(parts) > 8 else None,
+                "mfi_abs":     float(parts[8])  if len(parts) > 8  else None,
+                "ad_abs":      float(parts[9])  if len(parts) > 9  else None,
                 "nhnl_abs":    float(parts[10]) if len(parts) > 10 else None,
             }
             rows.append(row)
@@ -437,6 +438,12 @@ def analyze(rows):
         "vnindex": [r["vnindex"]        for r in rows],
     }
 
+    ad_history = {
+        "dates":   [r["date"]          for r in rows],
+        "ad_abs":  [r.get("ad_abs")    for r in rows],
+        "vnindex": [r["vnindex"]       for r in rows],
+    }
+
     return {
         "date":            latest["date"],
         "vnindex":         latest["vnindex"],
@@ -444,6 +451,7 @@ def analyze(rows):
         "nhnl_history":    nhnl_history,
         "breadth_history": breadth_history,
         "mfi_history":     mfi_history,
+        "ad_history":      ad_history,
         "indicators": {
             "rsi21":       latest["rsi21"],
             "rsi70":       latest.get("rsi70"),
