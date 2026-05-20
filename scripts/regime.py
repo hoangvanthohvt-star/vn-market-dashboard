@@ -444,6 +444,12 @@ def analyze(rows):
         "vnindex": [r["vnindex"]       for r in rows],
     }
 
+    gap_history = {
+        "dates":   [r["date"]                             for r in rows],
+        "gap":     [round(r["rsi21"] - r["nhnl_rsi"], 1) for r in rows],
+        "vnindex": [r["vnindex"]                          for r in rows],
+    }
+
     return {
         "date":            latest["date"],
         "vnindex":         latest["vnindex"],
@@ -452,6 +458,7 @@ def analyze(rows):
         "breadth_history": breadth_history,
         "mfi_history":     mfi_history,
         "ad_history":      ad_history,
+        "gap_history":     gap_history,
         "indicators": {
             "rsi21":       latest["rsi21"],
             "rsi70":       latest.get("rsi70"),

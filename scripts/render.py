@@ -507,6 +507,7 @@ def main():
         "{{breadth_chart_json}}":    json.dumps(snapshot.get("breadth_chart", {})),
         "{{mfi_chart_json}}":        json.dumps(snapshot.get("mfi_chart", {})),
         "{{ad_chart_json}}":         json.dumps(snapshot.get("ad_chart", {})),
+        "{{gap_chart_json}}":        json.dumps(snapshot.get("gap_chart", {})),
         # Divergence checklist
         "{{regime_div5d_rows}}":         render_div_direction_rows(d5),
         "{{regime_div5d_verdict_class}}": v5_cls,
