@@ -503,6 +503,7 @@ def main():
         "{{regime_metric_cards}}":   render_metric_cards(regime),
         # Charts
         "{{chart_json}}":            chart_json,
+        "{{full_chart_json}}":       json.dumps(regime.get("full_history", hist)),
         "{{nhnl_chart_json}}":       json.dumps(snapshot.get("nhnl_chart", {})),
         "{{breadth_chart_json}}":    json.dumps(snapshot.get("breadth_chart", {})),
         "{{mfi_chart_json}}":        json.dumps(snapshot.get("mfi_chart", {})),

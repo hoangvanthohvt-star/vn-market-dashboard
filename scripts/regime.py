@@ -414,7 +414,7 @@ def analyze(rows):
     scenarios = build_scenarios(rows30, div, trend_label, breadth_label, mf_summary, alloc)
     phases    = build_phases(rows30)
 
-    # 30-day history for chart + divergence detail
+    # 30-day history for divergence detail
     history = {
         "dates":   [r["date"]        for r in rows30],
         "vnindex": [r["vnindex"]     for r in rows30],
@@ -423,6 +423,17 @@ def analyze(rows):
         "nhnl":    [r["nhnl_rsi"]    for r in rows30],
         "mfi":     [r["mfi_rsi"]     for r in rows30],
         "ad":      [r.get("ad_rsi")  for r in rows30],
+    }
+
+    # Full history for main chart (all available rows)
+    full_history = {
+        "dates":   [r["date"]           for r in rows],
+        "vnindex": [r["vnindex"]        for r in rows],
+        "rsi21":   [r["rsi21"]          for r in rows],
+        "breadth": [r["breadth_pct"]    for r in rows],
+        "nhnl":    [r["nhnl_rsi"]       for r in rows],
+        "mfi":     [r["mfi_rsi"]        for r in rows],
+        "ad":      [r.get("ad_rsi")     for r in rows],
     }
 
     nhnl_history = {
@@ -459,6 +470,7 @@ def analyze(rows):
         "date":            latest["date"],
         "vnindex":         latest["vnindex"],
         "history":         history,
+        "full_history":    full_history,
         "nhnl_history":    nhnl_history,
         "breadth_history": breadth_history,
         "mfi_history":     mfi_history,

@@ -271,9 +271,16 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 </div>
 
 
-<!-- ══ 30-DAY CHART ══ -->
+<!-- ══ MAIN CHART ══ -->
 <div class="section">
-  <h2>30-Day Price &amp; Indicator Chart</h2>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">Price &amp; Indicator Chart</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setMainRange(1)" id="mainBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setMainRange(2)" id="mainBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setMainRange(3)" id="mainBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
   <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
 </div>
 
@@ -326,35 +333,63 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 
 <script>
 (function(){
-  const D = {{chart_json}};
+  const D = {{full_chart_json}};
   if(!D||!D.dates) return;
   const ctx = document.getElementById('mainChart').getContext('2d');
-  new Chart(ctx,{
-    type:'line',
-    data:{
-      labels: D.dates,
-      datasets:[
-        {label:'VNIndex (right)',data:D.vnindex,borderColor:'#173F35',backgroundColor:'rgba(23,63,53,0.07)',fill:true,tension:0.3,pointRadius:2,borderWidth:2.5,yAxisID:'y1'},
-        {label:'RSI 21D',data:D.rsi21,borderColor:'#00BF6F',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:1.5,borderWidth:2,yAxisID:'y',hidden:true},
-        {label:'Breadth %>MA50',data:D.breadth,borderColor:'#C08F4F',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:1.5,borderWidth:2,yAxisID:'y'},
-        {label:'NHNL RSI',data:D.nhnl,borderColor:'#FF0037',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:1.5,borderWidth:2,borderDash:[5,3],yAxisID:'y'},
-        {label:'MFI RSI',data:D.mfi,borderColor:'#014ABD',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:1,borderWidth:1.5,yAxisID:'y',hidden:true},
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{position:'top',labels:{usePointStyle:true,padding:14,font:{family:'Manrope',size:11}}},
-        tooltip:{backgroundColor:'#173F35',titleFont:{family:'Manrope'},bodyFont:{family:'Manrope'}}
+  const TDY = 250;
+
+  function makeMainChart(dates, d) {
+    return new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: dates,
+        datasets:[
+          {label:'VNIndex (right)', data:d.vnindex, borderColor:'#173F35', backgroundColor:'rgba(23,63,53,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1'},
+          {label:'RSI 21D',         data:d.rsi21,   borderColor:'#00BF6F', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y', hidden:true},
+          {label:'Breadth %>MA50',  data:d.breadth, borderColor:'#C08F4F', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y'},
+          {label:'NHNL RSI',        data:d.nhnl,    borderColor:'#FF0037', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2,   borderDash:[5,3], yAxisID:'y'},
+          {label:'MFI RSI',         data:d.mfi,     borderColor:'#014ABD', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:1.5, yAxisID:'y', hidden:true},
+        ]
       },
-      scales:{
-        y:{position:'left',title:{display:true,text:'RSI / Breadth / NHNL',font:{family:'Manrope',size:11}},min:10,max:80,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{family:'Manrope',size:11}}},
-        y1:{position:'right',title:{display:true,text:'VNIndex',font:{family:'Manrope',size:11}},grid:{drawOnChartArea:false},ticks:{font:{family:'Manrope',size:11}}},
-        x:{ticks:{font:{family:'Manrope',size:10},maxRotation:45},grid:{display:false}}
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'}}
+        },
+        scales:{
+          y: {position:'left',  title:{display:true,text:'RSI / Breadth / NHNL',font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
+          y1:{position:'right', title:{display:true,text:'VNIndex',font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
       }
-    }
-  });
+    });
+  }
+
+  function sliceD(start) {
+    return {
+      vnindex: D.vnindex.slice(start), rsi21: D.rsi21.slice(start),
+      breadth: D.breadth.slice(start), nhnl:   D.nhnl.slice(start),
+      mfi:     D.mfi.slice(start),
+    };
+  }
+
+  let mainChart = makeMainChart(D.dates, sliceD(0));
+
+  window.setMainRange = function(years) {
+    const start = Math.max(0, D.dates.length - years * TDY);
+    mainChart.destroy();
+    mainChart = makeMainChart(D.dates.slice(start), sliceD(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('mainBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color      = active ? '#fff'    : '';
+      btn.style.border     = active ? '1px solid #173F35' : '1px solid #ccc';
+    });
+  };
+  setMainRange(3);
 })();
 </script>
 
