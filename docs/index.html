@@ -22,6 +22,7 @@ body{font-family:'Manrope',sans-serif;background:#f0f2f5;color:var(--dc-black);l
 .header::after{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:var(--dc-green);opacity:0.08;border-radius:50%;}
 .header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
 .header h1{font-size:32px;font-weight:800;letter-spacing:-0.5px;}
+.header .subtitle{color:rgba(255,255,255,0.6);font-size:13px;margin-top:4px;}
 .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
 .date-badge{background:rgba(255,255,255,0.12);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;}
 .vni-badge{font-size:28px;font-weight:800;letter-spacing:-1px;}
@@ -139,11 +140,9 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 <!-- ══ HEADER ══ -->
 <div class="header">
   <div class="header-top">
-    <h1>Market Regime</h1>
-    <div class="header-right">
-      <div class="date-badge">2026-05-20</div>
-      <div class="vni-badge">1,913.23</div>
-      <div class="vni-chg up">0.30 (+0.00%)</div>
+    <div>
+      <h1>Market Regime</h1>
+      <div class="subtitle">2026 May 20 - 22:23</div>
     </div>
   </div>
 </div>
