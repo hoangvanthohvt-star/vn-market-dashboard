@@ -145,7 +145,12 @@ def calc_divergence(rows):
         internals = [_dir(s, n) for s in [breadth_s, nhnl_s, mfi_s] if len(s) > n]
         if len(ad_s) > n:
             internals.append(_dir(ad_s, n))
-        opposite = sum(1 for d in internals if d not in (rsi_dir, "flat"))
+        rsi_chg = rsi21_s[-1] - rsi21_s[-1 - n]
+        if rsi_chg == 0:
+            opposite = 0
+        else:
+            opp_dir = "falling" if rsi_chg > 0 else "rising"
+            opposite = sum(1 for d in internals if d == opp_dir)
         diverged = opposite >= 3
         dir_results[key] = {"rsi_dir": rsi_dir, "diverged": diverged, "opposite": opposite}
 
