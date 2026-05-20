@@ -142,7 +142,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="header-top">
     <div>
       <h1>Market Regime</h1>
-      <div class="subtitle">Breadth · Regime · Screener · generated 2026-05-20 14:35 ICT</div>
+      <div class="subtitle">Breadth · Regime · Screener · generated 2026-05-20 14:58 ICT</div>
     </div>
     <div class="header-right">
       <div class="date-badge">2026-05-20</div>
@@ -463,14 +463,15 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   }
 
   function makeChart(dates, nhnl, vni) {
+    const colors = nhnl.map(v => v >= 0 ? 'rgba(0,191,111,0.75)' : 'rgba(255,0,55,0.75)');
     const ma10 = calcMA(nhnl, 10);
     return new Chart(ctx, {
       data: {
         labels: dates,
         datasets: [
-          {type:'line', label:'NHNL RSI',      data:nhnl, borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.07)', fill:true,  borderWidth:2,   pointRadius:0, tension:0.3, yAxisID:'y', order:2},
-          {type:'line', label:'NHNL MA10',      data:ma10, borderColor:'#FF671B', backgroundColor:'transparent',          fill:false, borderWidth:2,   pointRadius:0, tension:0.3, yAxisID:'y', order:1, hidden:true},
-          {type:'line', label:'VNIndex (right)',data:vni,  borderColor:'#173F35', backgroundColor:'transparent',          fill:false, borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:0}
+          {type:'bar',  label:'NHNL RSI',       data:nhnl, backgroundColor:colors, borderWidth:0, yAxisID:'y', order:2},
+          {type:'line', label:'NHNL MA10',       data:ma10, borderColor:'#FF671B', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3, yAxisID:'y', order:1, hidden:true},
+          {type:'line', label:'VNIndex (right)', data:vni,  borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:0}
         ]
       },
       options: {
