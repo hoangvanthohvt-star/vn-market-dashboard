@@ -396,8 +396,8 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
       data: {
         labels: dates,
         datasets: [
-          {type:'line', label:'Breadth % > MA50', data:breadth, borderColor:'#014ABD', backgroundColor:'rgba(1,74,189,0.08)', fill:true, tension:0.3, pointRadius:0, borderWidth:2, yAxisID:'y', order:2},
-          {type:'line', label:'VNIndex (right)', data:vni, borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:1}
+          {type:'line', label:'Breadth % > MA50', data:breadth, borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.06)', fill:true, tension:0.3, pointRadius:0, borderWidth:2, yAxisID:'y', order:2},
+          {type:'line', label:'VNIndex (right)',   data:vni,    borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:1}
         ]
       },
       options: {
@@ -406,10 +406,16 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
         plugins:{
           legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
           tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
-            callbacks:{label:function(c){return c.dataset.label+': '+(c.dataset.yAxisID==='y' ? c.parsed.y.toFixed(1)+'%' : c.parsed.y.toFixed(0));}}}
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.dataset.yAxisID==='y' ? c.parsed.y.toFixed(1)+'%' : c.parsed.y.toFixed(0));}}},
+          annotation: {}
         },
         scales:{
-          y:{position:'left', min:0, max:100, title:{display:true, text:'% > MA50', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}, callback:v=>v+'%'}},
+          y:{position:'left', min:0, max:100,
+            title:{display:true, text:'% > MA50', font:{family:'Manrope',size:11}},
+            grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'Manrope',size:11}, callback:v=>v+'%'},
+            afterDataLimits(axis){ axis.max = 100; },
+          },
           y1:{position:'right', title:{display:true, text:'VNIndex', font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
           x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
         }
