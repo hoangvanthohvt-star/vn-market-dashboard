@@ -255,21 +255,24 @@ def build_scenarios(rows, div, trend_label, breadth_label, mf_label, alloc):
                  "invalidation": "Price holds support, RSI21 bounces above 55."},
             ]
         else:
+            bear_prob = 100 - cont + 10   # ~60 when cont=50; rises as cont falls
+            bull_prob = max(10, cont - 15) # ~35 when cont=50; never below 10
+            side_prob = 5
             sc = [
                 {"name": "Distribution accelerates",
-                 "probability": 100 - cont - 5,
+                 "probability": bear_prob,
                  "allocation": 20,
                  "logic": f"Divergence {div['severity']} ({div['type']}). Gap={div['gap']:+.1f}. High reversal risk.",
                  "confirmation": f"RSI21 breaks 55, breadth falls below 35%.",
                  "invalidation": "Breadth and NHNL recover, RSI21 holds 60+."},
                 {"name": "Divergence fades, upside resumes",
-                 "probability": cont,
+                 "probability": bull_prob,
                  "allocation": alloc,
                  "logic": "Internals catch up to RSI21; divergence resolves bullishly.",
                  "confirmation": "NHNL and A/D turn up alongside RSI21.",
                  "invalidation": f"Gap divergence widens beyond {abs(div['gap'])+5:.0f}."},
                 {"name": "Sideways chop",
-                 "probability": 5,
+                 "probability": side_prob,
                  "allocation": 40,
                  "logic": "Market digests gains without resolution.",
                  "confirmation": "RSI21 oscillates 58-65, breadth flat.",
