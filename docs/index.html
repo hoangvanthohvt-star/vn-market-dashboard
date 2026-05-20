@@ -142,7 +142,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="header-top">
     <div>
       <h1>Market Regime</h1>
-      <div class="subtitle">Breadth · Regime · Screener · generated 2026-05-20 07:26 ICT</div>
+      <div class="subtitle">Breadth · Regime · Screener · generated 2026-05-20 07:34 ICT</div>
     </div>
     <div class="header-right">
       <div class="date-badge">2026-05-19</div>
@@ -347,7 +347,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 <!-- ══ RSI GAP CHART ══ -->
 <div class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">RSI 21D − NHNL RSI vs VNIndex · Risky zones: &lt;−20 (orange) · &lt;−30 (red)</h2>
+    <h2 style="margin:0;">RSI 21D − NHNL RSI vs VNIndex · Danger zones: &gt;+30 · &lt;−20</h2>
     <div style="display:flex;gap:6px;">
       <button onclick="setGapRange(1)" id="gapBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
       <button onclick="setGapRange(2)" id="gapBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
@@ -595,16 +595,17 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
       const {ctx:c, chartArea, scales} = chart;
       if(!chartArea) return;
       const y = scales.y;
+      const yTop = chartArea.top;
       const yBot = chartArea.bottom;
       c.save();
-      // orange zone: < -20
+      // orange zone: > +30 (top)
+      const y30top = Math.max(y.getPixelForValue(30), yTop);
+      c.fillStyle = 'rgba(255,103,27,0.13)';
+      c.fillRect(chartArea.left, yTop, chartArea.width, y30top - yTop);
+      // orange zone: < -20 (bottom)
       const y20 = Math.min(y.getPixelForValue(-20), yBot);
       c.fillStyle = 'rgba(255,103,27,0.13)';
       c.fillRect(chartArea.left, y20, chartArea.width, yBot - y20);
-      // red zone: < -30
-      const y30 = Math.min(y.getPixelForValue(-30), yBot);
-      c.fillStyle = 'rgba(255,0,55,0.15)';
-      c.fillRect(chartArea.left, y30, chartArea.width, yBot - y30);
       c.restore();
     }
   };
@@ -618,8 +619,8 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
           {type:'line', label:'RSI21 − NHNL RSI', data:gap, borderColor:'#97999B', backgroundColor:'transparent', fill:false, tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
           {type:'line', label:'VNIndex (right)',   data:vni, borderColor:'#173F35', backgroundColor:'transparent', fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
           // threshold reference lines
-          {type:'line', label:'−20 (warning)',  data:Array(dates.length).fill(-20), borderColor:'rgba(255,103,27,0.7)', backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:'y', order:3},
-          {type:'line', label:'−30 (danger)',   data:Array(dates.length).fill(-30), borderColor:'rgba(255,0,55,0.7)',   backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:'y', order:3},
+          {type:'line', label:'+30 (danger)',  data:Array(dates.length).fill(30),  borderColor:'rgba(255,103,27,0.7)', backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:'y', order:3},
+          {type:'line', label:'−20 (danger)',  data:Array(dates.length).fill(-20), borderColor:'rgba(255,103,27,0.7)', backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:'y', order:3},
         ]
       },
       options: {
@@ -627,10 +628,10 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
         interaction:{mode:'index', intersect:false},
         plugins:{
           legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11},
-            filter: item => !['−20 (warning)','−30 (danger)'].includes(item.text) || true}},
+            filter: item => !['+30 (danger)','−20 (danger)'].includes(item.text)}},
           tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
             callbacks:{label:function(c){
-              if(c.dataset.label.startsWith('−')) return null;
+              if(['+30 (danger)','−20 (danger)'].includes(c.dataset.label)) return null;
               return c.dataset.label+': '+(c.parsed.y!=null?c.parsed.y.toFixed(1):'—');
             }}}
         },
