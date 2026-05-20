@@ -417,6 +417,9 @@ def analyze(rows):
     scenarios = build_scenarios(rows30, div, trend_label, breadth_label, mf_summary, alloc)
     phases    = build_phases(rows30)
 
+    # Recommended allocation = probability-weighted average of scenario allocations
+    alloc = round(sum(s["probability"] * s["allocation"] for s in scenarios) / 100 / 10) * 10
+
     # 30-day history for divergence detail
     history = {
         "dates":   [r["date"]        for r in rows30],
