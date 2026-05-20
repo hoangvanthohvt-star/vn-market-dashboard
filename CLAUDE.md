@@ -19,12 +19,32 @@ Universe is the sector watchlist (~111 tickers) — single query, no timeout ris
 Skip this step; do not call `supabase_market_breadth`.
 
 ### Step 3 — Regime indicators
-Fetch the Google Doc as plain text using this export URL:
+
+**Do NOT use urllib, requests, subprocess, or WebFetch — all are blocked in this environment.**
+
+Use the Google Drive MCP tool to download the doc:
+- Tool: `mcp__d5e363e8-c1a9-42ab-8518-42516e57b5ba__download_file_content`
+- fileId: `1-ENaTgXaMnxa5h8e2Q0OAalUSbgEagosG5ZyyuTuEZM`
+- exportMimeType: `text/plain`
+
+The tool returns a large JSON result that gets saved to a file path shown in the response.
+Decode it and save to `/tmp/regime_doc.txt` using the Bash tool:
+```bash
+cat <path-to-tool-result-file> | python3 -c "
+import sys, json, base64
+data = json.load(sys.stdin)
+content = base64.b64decode(data['content']).decode('utf-8')
+open('/tmp/regime_doc.txt', 'w').write(content)
+print('Saved', len(content), 'chars')
+"
 ```
-https://docs.google.com/document/d/1-ENaTgXaMnxa5h8e2Q0OAalUSbgEagosG5ZyyuTuEZM/export?format=txt
+
+Then run regime.py via the Bash tool (NOT execute_python):
+```bash
+python3 scripts/regime.py /tmp/regime_doc.txt
 ```
-Use `urllib.request.urlopen` or `requests.get` to fetch the text, then pipe it into
-`scripts/regime.py` via `subprocess.run` to get the regime JSON.
+
+Capture the JSON output as `regime`.
 
 ### Step 4 — Sector RSI14 analysis
 Run `scripts/sector_rsi.py` via the `execute_python` MCP tool.
