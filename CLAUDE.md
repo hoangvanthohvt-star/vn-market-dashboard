@@ -39,12 +39,13 @@ The Google Doc is the source of truth for both. Just assign:
 ```python
 nhnl_chart    = regime["nhnl_history"]    # keys: dates, nhnl, vnindex
 breadth_chart = regime["breadth_history"] # keys: dates, breadth_pct, vnindex
+mfi_chart     = regime["mfi_history"]     # keys: dates, mfi_abs, vnindex
 ```
 
 ### Step 6 — Assemble data/latest.json
 Combine all of the above into `data/latest.json` with this structure:
 ```
-latest_date, vnindex, universe, screen_rules, sector_analysis, screened, regime, nhnl_chart, breadth_chart
+latest_date, vnindex, universe, screen_rules, sector_analysis, screened, regime, nhnl_chart, breadth_chart, mfi_chart
 ```
 
 ### Step 7 — Render
