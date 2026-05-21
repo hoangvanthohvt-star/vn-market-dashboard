@@ -206,105 +206,153 @@ def calc_divergence(rows):
 # Scenarios
 # ---------------------------------------------------------------------------
 
-def _base_rate(div):
-    dir_5d  = div["dir_5d"]
-    dir_10d = div["dir_10d"]
-    gap_abs = abs(div["gap"])
-    strong  = dir_5d and dir_10d
-    if strong and gap_abs > 20:               return 30
-    if strong or (dir_10d and gap_abs >= 12): return 40
-    if dir_10d or gap_abs >= 12:              return 50
-    if dir_5d:                                return 55
-    return 65
+def _bear_score(div, rsi, breadth):
+    """Bearish risk score 0-100 for uptrend regimes. Higher = more risk."""
+    score = 0
+    # Gap: RSI21 vs internal average (level divergence)
+    gap = abs(div["gap"])
+    if   gap >= 30: score += 35
+    elif gap >= 20: score += 25
+    elif gap >= 10: score += 15
+    # Direction divergence (internals actively moving against RSI)
+    if div["dir_10d"]: score += 25
+    if div["dir_5d"]:  score += 15
+    # Breadth level
+    if   breadth < 25: score += 20
+    elif breadth < 40: score += 10
+    elif breadth > 60: score -= 5
+    # RSI extension (overbought adds reversal risk)
+    if rsi > 70: score += 10
+    return max(0, min(100, score))
 
 
-def build_scenarios(rows, div, trend_label, breadth_label, mf_label, alloc):
-    latest   = rows[-1]
-    rsi      = latest["rsi21"]
-    breadth  = latest["breadth_pct"]
-    base     = _base_rate(div)
-
-    adj = 0
-    if rsi > 70 or rsi < 30:       adj -= 10
-    if breadth > 75 or breadth < 25: adj -= 10
-    cont = max(25, min(70, base + adj))
+def build_scenarios(rows, div, trend_label, breadth_label, mf_label, base_alloc):
+    latest  = rows[-1]
+    rsi     = latest["rsi21"]
+    breadth = latest["breadth_pct"]
 
     is_up   = "Uptrend" in trend_label or "Sideways Up" in trend_label
     is_down = "Downtrend" in trend_label
 
     if is_up:
-        if cont >= 55:
+        bs = _bear_score(div, rsi, breadth)
+
+        if bs < 20:   # ── Clean uptrend ──────────────────────────────────────
             sc = [
                 {"name": "Uptrend continues",
-                 "probability": cont,
-                 "allocation": min(100, alloc + 10),
-                 "logic": f"RSI21={rsi:.1f} ({trend_label}). Breadth {breadth:.1f}%. MF: {mf_label}.",
-                 "confirmation": f"RSI21 holds >{rsi-3:.0f}, breadth improves above {breadth+3:.0f}%.",
-                 "invalidation": f"RSI21 breaks below 55, breadth collapses below {breadth-8:.0f}%."},
+                 "probability": 65,
+                 "allocation": min(100, base_alloc + 10),
+                 "logic": f"RSI21={rsi:.1f} ({trend_label}). Breadth {breadth:.1f}%. MF: {mf_label}. Risk score: {bs}.",
+                 "confirmation": f"RSI21 holds >{rsi-3:.0f}, breadth expands above {breadth+5:.0f}%.",
+                 "invalidation": f"RSI21 drops below 55, breadth falls below {max(25,breadth-10):.0f}%."},
                 {"name": "Pullback / Consolidation",
-                 "probability": 100 - cont - 10,
-                 "allocation": max(30, alloc - 20),
-                 "logic": "Short-term extended; divergence may trigger a pause.",
-                 "confirmation": "RSI21 retreats to 57-60, breadth dips but holds 35%+.",
-                 "invalidation": "RSI21 rebounds, breadth recovers above current level."},
+                 "probability": 25,
+                 "allocation": max(40, base_alloc - 20),
+                 "logic": "Healthy digestion of gains; internals intact.",
+                 "confirmation": "RSI21 dips 57-60, breadth holds 50%+.",
+                 "invalidation": "RSI21 rebounds quickly, breadth stable."},
                 {"name": "Trend breaks down",
                  "probability": 10,
                  "allocation": 20,
-                 "logic": f"Divergence severity: {div['severity']}. Multiple indicator failure needed.",
+                 "logic": "Tail risk; requires simultaneous failure of multiple internals.",
                  "confirmation": "RSI21 < 50, breadth < 30%, NHNL collapses.",
                  "invalidation": "Price holds support, RSI21 bounces above 55."},
             ]
-        else:
-            bear_prob = 100 - cont + 10   # ~60 when cont=50; rises as cont falls
-            bull_prob = max(10, cont - 15) # ~35 when cont=50; never below 10
-            side_prob = 5
+        elif bs < 40:  # ── Caution ────────────────────────────────────────────
             sc = [
-                {"name": "Distribution accelerates",
-                 "probability": bear_prob,
+                {"name": "Uptrend continues",
+                 "probability": 50,
+                 "allocation": base_alloc,
+                 "logic": f"RSI21={rsi:.1f} trend intact; early warning signs present. Risk score: {bs}.",
+                 "confirmation": f"RSI21 holds >{rsi-3:.0f}, breadth recovers above {breadth+8:.0f}%.",
+                 "invalidation": f"RSI21 breaks 55, breadth slides below {max(25,breadth-8):.0f}%."},
+                {"name": "Pullback / Consolidation",
+                 "probability": 35,
+                 "allocation": max(30, base_alloc - 30),
+                 "logic": f"Gap {div['gap']:+.1f}. Breadth {breadth:.1f}% signals narrow leadership.",
+                 "confirmation": "RSI21 retreats to 57-60, breadth stabilises.",
+                 "invalidation": "RSI21 rebounds, internals recover."},
+                {"name": "Trend breaks down",
+                 "probability": 15,
                  "allocation": 20,
-                 "logic": f"Divergence {div['severity']} ({div['type']}). Gap={div['gap']:+.1f}. High reversal risk.",
-                 "confirmation": f"RSI21 breaks 55, breadth falls below 35%.",
-                 "invalidation": "Breadth and NHNL recover, RSI21 holds 60+."},
-                {"name": "Divergence fades, upside resumes",
-                 "probability": bull_prob,
-                 "allocation": alloc,
-                 "logic": "Internals catch up to RSI21; divergence resolves bullishly.",
-                 "confirmation": "NHNL and A/D turn up alongside RSI21.",
-                 "invalidation": f"Gap divergence widens beyond {abs(div['gap'])+5:.0f}."},
+                 "logic": f"Breadth {breadth:.1f}% and gap {div['gap']:+.1f} elevate tail risk.",
+                 "confirmation": "RSI21 < 50, breadth < 30%, NHNL collapses.",
+                 "invalidation": "Internals recover, gap narrows below 10."},
+            ]
+        elif bs < 60:  # ── Warning ────────────────────────────────────────────
+            sc = [
+                {"name": "Distribution risk",
+                 "probability": 55,
+                 "allocation": 25,
+                 "logic": f"Risk score {bs}: gap {div['gap']:+.1f}, breadth {breadth:.1f}%, {div['severity']} divergence.",
+                 "confirmation": "RSI21 breaks 55, breadth falls below 30%.",
+                 "invalidation": "Breadth recovers above 45%, gap narrows, NHNL turns up."},
+                {"name": "Divergence resolves bullishly",
+                 "probability": 30,
+                 "allocation": base_alloc,
+                 "logic": "Internals catch up to RSI21; leadership broadens.",
+                 "confirmation": "Breadth expands >50%, NHNL and A/D turn up.",
+                 "invalidation": f"Gap widens beyond {abs(div['gap'])+8:.0f}, breadth makes new lows."},
                 {"name": "Sideways chop",
-                 "probability": side_prob,
-                 "allocation": 40,
-                 "logic": "Market digests gains without resolution.",
-                 "confirmation": "RSI21 oscillates 58-65, breadth flat.",
+                 "probability": 15,
+                 "allocation": 45,
+                 "logic": "Market stalls while internals rebuild — no clean resolution.",
+                 "confirmation": "RSI21 oscillates 55-65, breadth flat.",
                  "invalidation": "Decisive directional break."},
             ]
+        else:          # ── High risk ───────────────────────────────────────────
+            sc = [
+                {"name": "Distribution accelerates",
+                 "probability": 70,
+                 "allocation": 15,
+                 "logic": f"Risk score {bs}: gap {div['gap']:+.1f}, breadth {breadth:.1f}%, {div['severity']} divergence.",
+                 "confirmation": "RSI21 breaks 55, breadth crashes below 25%.",
+                 "invalidation": "Internals sharply recover, gap closes to <10."},
+                {"name": "Divergence resolves bullishly",
+                 "probability": 20,
+                 "allocation": base_alloc,
+                 "logic": "Internals aggressively catch up — requires major catalyst.",
+                 "confirmation": "NHNL spikes, breadth jumps >50% within 3 sessions.",
+                 "invalidation": f"Gap persists, breadth stays below {breadth+5:.0f}%."},
+                {"name": "Sideways chop",
+                 "probability": 10,
+                 "allocation": 35,
+                 "logic": "Volatility compresses while internals remain broken.",
+                 "confirmation": "RSI21 range-bound 58-68, no breadth recovery.",
+                 "invalidation": "Directional break resolves."},
+            ]
+
     elif is_down:
+        if   rsi < 30: bounce_prob = 55
+        elif rsi < 40: bounce_prob = 35
+        else:          bounce_prob = 20
         sc = [
             {"name": "Downtrend continues",
-             "probability": cont,
+             "probability": 100 - bounce_prob - 10,
              "allocation": 10,
              "logic": f"RSI21={rsi:.1f} confirms downtrend. Breadth={breadth:.1f}%.",
              "confirmation": f"RSI21 falls below {rsi-3:.0f}, breadth stays below 35%.",
              "invalidation": "RSI21 reclaims 50, breadth rebounds above 40%."},
             {"name": "Oversold bounce",
-             "probability": 100 - cont - 10,
+             "probability": bounce_prob,
              "allocation": 40,
-             "logic": "Internals may form a bottom while trend stays weak.",
+             "logic": "Mean-reversion rally likely; not a trend change.",
              "confirmation": "RSI21 turns up from <45, NHNL stops falling.",
              "invalidation": "RSI21 fails to recover, breadth makes new lows."},
             {"name": "Full trend reversal",
              "probability": 10,
              "allocation": 65,
-             "logic": "Bullish divergence (if present) could catalyse reversal.",
+             "logic": "Bullish divergence could catalyse full reversal.",
              "confirmation": "RSI21 > 50 with breadth expanding above 40%.",
              "invalidation": "Rally fades, RSI21 rolls over below 48."},
         ]
-    else:
+
+    else:  # Neutral / Sideways
         sc = [
             {"name": "Resolves upward",
              "probability": 45,
              "allocation": 70,
-             "logic": f"RSI21={rsi:.1f} in neutral zone. Break depends on internals.",
+             "logic": f"RSI21={rsi:.1f} in neutral zone. Slight upward historical bias.",
              "confirmation": "RSI21 > 55, breadth expands above 50%.",
              "invalidation": "RSI21 drops below 45, breadth contracts."},
             {"name": "Sideways continues",
@@ -408,13 +456,7 @@ def analyze(rows):
 
     regime_name = f"{trend_label} – {breadth_label} – {mf_summary}"
 
-    # Adjust allocation for divergence
-    alloc = alloc_score
-    sev_map = {"Severe": -40, "Moderate": -25, "Mild": -15, "Early Warning": -10}
-    alloc += sev_map.get(div["severity"], 0)
-    alloc  = round(max(10, min(100, alloc)) / 10) * 10
-
-    scenarios = build_scenarios(rows30, div, trend_label, breadth_label, mf_summary, alloc)
+    scenarios = build_scenarios(rows30, div, trend_label, breadth_label, mf_summary, alloc_score)
     phases    = build_phases(rows30)
 
     # Recommended allocation = probability-weighted average of scenario allocations
