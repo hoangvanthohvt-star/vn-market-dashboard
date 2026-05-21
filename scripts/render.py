@@ -49,169 +49,7 @@ def pos_neg(x):
     except: return "neu"
 
 
-# ---------------------------------------------------------------------------
-# Market Overview — screened & sector rows (DC style)
-# ---------------------------------------------------------------------------
 
-_SECTOR_TICKERS = {
-    "Banking":        ["ACB","BID","CTG","HDB","MBB","MSB","SHB","STB","TCB","TPB","VCB","VPB"],
-    "Real Estate":    ["CEO","CII","DIG","DXG","HDC","KDH","NLG","NVL","PDR","TCH"],
-    "Industrial Park":["KBC","IDC","BCM","VGC"],
-    "Steel":          ["HPG","HSG","NKG","SMC","VGS"],
-    "Retail":         ["DGW","FRT","MWG","PET","PNJ"],
-    "Fertilizer":     ["BFC","CSV","DCM","DGC","DPM","LAS"],
-    "Oil & Gas":      ["BSR","GAS","OIL","PLX","PVD","PVS","PVT"],
-    "Construction":   ["CTD","FCN","HBC","HHV","LCG","VCG"],
-    "Securities":     ["BSI","CTS","FTS","HCM","MBS","SHS","SSI","TCX","VCI","VCK","VDS","VIX","VND","VPX"],
-    "Consumer":       ["MSN","QNS","SBT","VNM"],
-    "VinGroup":       ["VIC","VHM","VRE","VPL"],
-    "GEX Family":     ["EVF","GEE","GEL","GEX","VIX"],
-    "Tech":           ["CMG","CTR","FOX","FPT","VGI","VTP"],
-    "Transport":      ["GMD","HAH","PHP","VOS"],
-    "Textile":        ["GIL","MSH","TCM","TNG","VGT"],
-    "Rubber":         ["DPR","DRI","GVR","PHR","SIP"],
-    "Fishery":        ["ANV","IDI","VHC"],
-    "Electricity":    ["GEG","NT2","PC1","POW","PPC","REE","TV2"],
-}
-_TICKER_SECTOR = {t: s for s, tickers in _SECTOR_TICKERS.items() for t in tickers}
-
-def render_screened_rows(rows):
-    out = []
-    for r in rows:
-        chg  = r.get("PRICE_PCT_1D")
-        cls  = "pos-t" if chg and float(chg) > 0 else ("neg-t" if chg and float(chg) < 0 else "")
-        rs   = r.get("rs_strength_pct", 0)
-        g20  = r.get("ema20_gap_pct")
-        g50  = r.get("ema50_gap_pct")
-        # EMA20 vs EMA50: derived from (1+g50/100)/(1+g20/100) - 1
-        if g20 is not None and g50 is not None:
-            ema_gap = ((1 + g50 / 100) / (1 + g20 / 100) - 1) * 100
-        else:
-            ema_gap = None
-        sector = _TICKER_SECTOR.get(r["TICKER"], "")
-        tvnd = r.get("turnover_bn_vnd")
-        tvnd_str = f"{float(tvnd):.1f}" if tvnd is not None else "—"
-        out.append(
-            f"<tr>"
-            f"<td class='fw ticker-link'>{r['TICKER']}</td>"
-            f"<td class='fw'>{sector}</td>"
-            f"<td class='tr'>{fmt(r['PX_LAST'])}</td>"
-            f"<td class='tr {cls}'>{fmt_pct(chg, digits=1, sign=True)}</td>"
-            f"<td class='tr pos-t'>{fmt_pct(g20, digits=1, sign=True)}</td>"
-            f"<td class='tr pos-t'>{fmt_pct(ema_gap, digits=1, sign=True)}</td>"
-            f"<td class='tr pos-t'>{fmt_pct(rs, digits=1, sign=True)}</td>"
-            f"<td class='tr'>{tvnd_str}</td>"
-            f"</tr>"
-        )
-    return "\n".join(out)
-
-
-def render_sector_analysis_rows(rows):
-    out = []
-    for r in rows:
-        s     = r.get("strength", 0)
-        chg   = r.get("strength_10d_chg")
-        brd   = r.get("breadth_pct")
-        tickers = r.get("tickers", [])
-
-        s_cls   = "pos-t" if s > 55 else ("warn-t" if s >= 45 else "neg-t")
-        chg_cls = ("pos-t" if chg and chg > 0 else ("neg-t" if chg and chg < 0 else "")) if chg is not None else ""
-        brd_cls = "pos-t" if brd and brd >= 60 else ("warn-t" if brd and brd >= 40 else "neg-t")
-
-        chg_str = f"{chg:+.1f}" if chg is not None else "—"
-        brd_str = f"{brd:.0f}%" if brd is not None else "—"
-        ticker_str = " · ".join(tickers) if tickers else "—"
-
-        out.append(
-            f"<tr>"
-            f"<td class='fw'>{r['sector']}</td>"
-            f"<td class='tr {s_cls}'>{s:.1f}</td>"
-            f"<td class='tr {chg_cls}'>{chg_str}</td>"
-            f"<td class='tr {brd_cls}'>{brd_str}</td>"
-            f"<td>{ticker_str}</td>"
-            f"</tr>"
-        )
-    return "\n".join(out) if out else "<tr><td colspan='5' style='color:#999;text-align:center;'>No data</td></tr>"
-
-
-def render_overview_cards(regime, screened, sector_analysis=None):
-    # Card 1 — Market Indicators
-    ind = regime.get("indicators", {}) if regime else {}
-    def _ind_row(label, val, fmt=".1f", suffix=""):
-        if val is None:
-            return f"<div style='display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'><span style='color:#111;font-weight:600;'>{label}</span><span style='font-weight:700;'>—</span></div>"
-        v = float(val)
-        cls = "#00BF6F" if v > 60 else ("#FF671B" if v >= 45 else "#FF0037")
-        return (
-            f"<div style='display:flex;justify-content:space-between;align-items:center;"
-            f"padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'>"
-            f"<span style='color:#111;font-weight:600;'>{label}</span>"
-            f"<span style='font-weight:700;color:{cls};'>{v:{fmt}}{suffix}</span>"
-            f"</div>"
-        )
-    ind_rows = "".join([
-        _ind_row("RSI 21D",      ind.get("rsi21")),
-        _ind_row("Breadth % &gt; MA50", ind.get("breadth_pct"), suffix="%"),
-        _ind_row("NHNL RSI",     ind.get("nhnl_rsi")),
-        _ind_row("MFI RSI",      ind.get("mfi_rsi")),
-        _ind_row("A/D RSI",      ind.get("ad_rsi")),
-    ])
-    card1 = (
-        f"<div class='ov-card'>"
-        f"<div class='ov-label'>Market Indicators</div>"
-        f"<div style='margin-top:8px;'>{ind_rows}</div>"
-        f"</div>"
-    )
-
-    # Card 2 — Top 5 from sector_analysis (RSI14 strength)
-    top5_src = sorted(sector_analysis or [], key=lambda x: x.get("strength", 0), reverse=True)[:5]
-    rows2 = []
-    for s in top5_src:
-        strength = s.get("strength", 0)
-        chg10 = s.get("strength_10d_chg")
-        s_cls = "pos-t" if strength > 55 else ("warn-t" if strength >= 45 else "neg-t")
-        chg10_color = "#00BF6F" if chg10 and chg10 > 0 else "#FF0037"
-        chg10_str = f'<span style="font-size:10px;color:{chg10_color};">{chg10:+.1f} 10d</span>' if chg10 is not None else ""
-        rows2.append(
-            f"<div style='display:flex;justify-content:space-between;align-items:center;"
-            f"padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'>"
-            f"<span style='font-weight:600;'>{s['sector']}</span>"
-            f"<span><span class='{s_cls}' style='font-weight:700;margin-right:6px;'>RSI {strength:.1f}</span>{chg10_str}</span>"
-            f"</div>"
-        )
-    _rows2_html = "".join(rows2) if rows2 else "<span style='color:#999'>—</span>"
-    card2 = (
-        f"<div class='ov-card'>"
-        f"<div class='ov-label'>Top 5 Strongest Sectors · RSI14</div>"
-        f"<div style='margin-top:8px;'>{_rows2_html}</div>"
-        f"</div>"
-    )
-
-    # Card 3 — Top 5 RS stocks
-    top5 = sorted(screened, key=lambda x: x.get("rs_strength_pct", 0), reverse=True)[:5]
-    rows3 = []
-    for r in top5:
-        chg = r.get("PRICE_PCT_1D", 0) or 0
-        rs = r.get("rs_strength_pct", 0)
-        chg_cls = "#00BF6F" if chg > 0 else "#FF0037"
-        rows3.append(
-            f"<div style='display:flex;justify-content:space-between;align-items:center;"
-            f"padding:3px 0;border-bottom:1px solid #eee;font-size:12px;'>"
-            f"<span style='font-weight:700;color:#173F35;'>{r['TICKER']}</span>"
-            f"<span>"
-            f"<span style='color:#00BF6F;font-weight:700;margin-right:8px;'>RS {rs:+.1f}%</span>"
-            f"<span style='color:{chg_cls};'>{chg:+.1f}%</span>"
-            f"</span>"
-            f"</div>"
-        )
-    card3 = (
-        f"<div class='ov-card'>"
-        f"<div class='ov-label'>Top 5 RS Stocks</div>"
-        f"<div style='margin-top:8px;'>{''.join(rows3)}</div>"
-        f"</div>"
-    )
-
-    return card1 + "\n" + card2 + "\n" + card3
 
 
 # ---------------------------------------------------------------------------
@@ -531,13 +369,6 @@ def main():
     replacements = {
         "{{latest_date}}":     snapshot["latest_date"],
         "{{generated_at}}":    (datetime.utcnow() + timedelta(hours=7)).strftime("%Y %b %d - %H:%M"),
-        # VNIndex header
-        "{{vni_close}}":       fmt(vni["close"], 2),
-        "{{vni_change}}":      fmt(vni["change"], 2),
-        "{{vni_change_pct}}":  fmt_pct(vni["change_pct"], 2, sign=True),
-        "{{vni_color}}":       color(vni["change"]),
-        # Overview cards
-        "{{overview_cards}}": render_overview_cards(regime, snapshot.get("screened", []), snapshot.get("sector_analysis", [])),
         # Exec summary
         "{{regime_name}}":          regime.get("regime_name", "—"),
         "{{regime_div_flag}}":       div_flag,
@@ -575,9 +406,6 @@ def main():
         # Scenarios & phases
         "{{regime_scenario_cards}}": render_scenario_cards(regime.get("scenarios", [])),
         "{{regime_phase_rows}}":     render_phase_rows(regime.get("phases", [])),
-        # Tables
-        "{{screened_rows}}":        render_screened_rows(snapshot.get("screened", [])),
-        "{{sector_analysis_rows}}": render_sector_analysis_rows(snapshot.get("sector_analysis", [])),
     }
 
     html = tmpl

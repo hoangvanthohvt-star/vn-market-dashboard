@@ -7,13 +7,13 @@ Updated every morning at 06:30 ICT by a scheduled Claude Code session.
 ## How to run the daily update
 
 When asked to run the daily update, do the following steps in order.
-**Steps 1, 3, and 4 are independent — run them in parallel in a single message for speed.**
+**Steps 1 and 3 are independent — run them in parallel in a single message for speed.**
 
-### Step 1 — Stock screening
+### Step 1 — VNIndex snapshot
 Run `scripts/screening.py` via the `execute_python` MCP tool.
 Copy the code from `scripts/screening.py` exactly and execute it.
-Capture: `latest_date`, `vnindex`, `universe`, `screen_rules`, `screened`.
-Universe is the sector watchlist (~111 tickers) — single query, no timeout risk.
+Capture: `latest_date`, `vnindex` (close, change, change_pct).
+This is now a lightweight single-table query — no timeout risk.
 
 ### Step 2 — Market breadth
 ~~Removed~~ — breadth data now comes entirely from the Google Doc via the regime step.
@@ -58,14 +58,7 @@ Key keys in `regime` output:
 - `allocation` — probability-weighted recommended allocation %
 - `regime_name`, `divergence_flag`, `severity`
 
-### Step 4 — Sector RSI14 analysis
-Run `scripts/sector_rsi.py` via the `execute_python` MCP tool.
-Copy the code from `scripts/sector_rsi.py` exactly and execute it.
-Capture: `sector_analysis` (list sorted by strength desc).
-Each entry has: `sector`, `strength` (mean RSI14), `strength_10d_chg`,
-`breadth_pct` (% tickers RSI14 > 50), `tickers` (all tickers, sorted by RSI14 desc).
-
-### Step 5 — Chart data (NHNL and Breadth)
+### Step 4 — Chart data (NHNL and Breadth)
 Both `nhnl_chart` and `breadth_chart` come directly from the regime output — no separate calculation needed.
 The Google Doc is the source of truth for both. Just assign:
 ```python
@@ -76,30 +69,26 @@ ad_chart      = regime["ad_history"]      # keys: dates, ad_abs, vnindex
 gap_chart     = regime["gap_history"]     # keys: dates, gap, vnindex
 ```
 
-### Step 6 — Assemble data/latest.json
+### Step 5 — Assemble data/latest.json
 Combine all of the above into `data/latest.json` with this structure:
 ```python
 snap = {
-    "latest_date":     screening["latest_date"],
-    "vnindex":         screening["vnindex"],
-    "universe":        screening["universe"],
-    "screen_rules":    screening["screen_rules"],
-    "screened":        screening["screened"],
-    "sector_analysis": sector_analysis,
-    "regime":          regime,           # full regime object (includes bear_detail, scenarios, full_history, etc.)
-    "nhnl_chart":      regime["nhnl_history"],
-    "breadth_chart":   regime["breadth_history"],
-    "mfi_chart":       regime["mfi_history"],
-    "ad_chart":        regime["ad_history"],
-    "gap_chart":       regime["gap_history"],
+    "latest_date":  screening["latest_date"],
+    "vnindex":      screening["vnindex"],
+    "regime":       regime,
+    "nhnl_chart":   regime["nhnl_history"],
+    "breadth_chart":regime["breadth_history"],
+    "mfi_chart":    regime["mfi_history"],
+    "ad_chart":     regime["ad_history"],
+    "gap_chart":    regime["gap_history"],
 }
 ```
 
-### Step 7 — Render
+### Step 6 — Render
 Run: `python3 scripts/render.py`
 This writes `docs/index.html`, `docs/data/latest.json`, and `docs/data/YYYY-MM-DD.json`.
 
-### Step 8 — Commit and push
+### Step 7 — Commit and push
 ```
 git add data/latest.json docs/
 git commit -m "Daily update YYYY-MM-DD"
@@ -117,17 +106,16 @@ Always push to `main` using `git push origin HEAD:main`. GitHub Pages serves fro
 ## Dashboard layout (top → bottom)
 1. Header (Market Regime title + timestamp)
 2. Metric cards (RSI / Breadth / NHNL / MFI / A/D / Gap / Allocation) — duplicated at top and before Divergence Checklist
-3. Market Overview cards (sector + RS stocks)
-4. Price & Indicator Chart (1Y/2Y/3Y, default 3Y, full_history)
-5. NHNL chart (bar, 1Y/2Y/3Y, default 1Y)
-6. Breadth chart (1Y/2Y/3Y, default 3Y)
-7. Executive Summary + Metric cards (second copy)
-8. Divergence Checklist
-9. Scenarios (bear score table + 3 scenario cards)
-10. MFI chart (1Y/2Y/3Y, default 3Y)
-11. RSI Gap chart — RSI21 − NHNL RSI vs VNIndex (1Y/2Y/3Y, default 3Y, danger zones >+30 and <−20)
-12. A/D Line chart (1Y/2Y/3Y, default 3Y)
-13. Footer
+3. NHNL chart (bar, 1Y/2Y/3Y, default 1Y)
+4. Breadth chart (1Y/2Y/3Y, default 3Y)
+5. Executive Summary + Metric cards (second copy)
+6. Divergence Checklist
+7. Scenarios (bear score table + 3 scenario cards)
+8. Price & Indicator Chart (1Y/2Y/3Y, default 3Y, full_history)
+9. MFI chart (1Y/2Y/3Y, default 3Y)
+10. RSI Gap chart — RSI21 − NHNL RSI vs VNIndex (1Y/2Y/3Y, default 3Y, danger zones >+30 and <−20)
+11. A/D Line chart (1Y/2Y/3Y, default 3Y)
+12. Footer
 
 ## Scenario framework (regime.py)
 Bear score (0–100) drives scenario probabilities for uptrend regimes:
