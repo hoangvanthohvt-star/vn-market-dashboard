@@ -31,19 +31,28 @@ UNIVERSE = [
 
 tickers_str = "','".join(UNIVERSE)
 
-df = sql_query(f"""
-    SELECT md.TICKER, md.TRADE_DATE, md.PX_LAST, md.VOLUME, md.MKT_CAP,
-           sm.VNI,
-           mi.CLOSEINDEX as IDX_CLOSE, mi.INDEXCHANGE, mi.PERCENTINDEXCHANGE
-    FROM Market_Data md
-    LEFT JOIN Sector_Map sm  ON sm.Ticker = md.TICKER
-    LEFT JOIN MarketIndex mi ON mi.TRADINGDATE = md.TRADE_DATE AND mi.COMGROUPCODE = 'VNINDEX'
-    WHERE md.TRADE_DATE >= '{LOOKBACK_START}'
-      AND md.TICKER IN ('{tickers_str}')
-      AND md.PX_LAST IS NOT NULL AND md.PX_LAST > 0 AND md.VOLUME > 0
+# Three separate queries: JOIN timeout workaround (AND VOLUME > 0 in SQL causes 15s timeout)
+df_md = sql_query(f"""
+    SELECT TICKER, TRADE_DATE, PX_LAST, VOLUME, MKT_CAP
+    FROM Market_Data
+    WHERE TRADE_DATE >= '{LOOKBACK_START}'
+      AND TICKER IN ('{tickers_str}')
+      AND PX_LAST IS NOT NULL AND PX_LAST > 0
 """)
+df_idx = sql_query(f"""
+    SELECT TRADINGDATE as TRADE_DATE, CLOSEINDEX as IDX_CLOSE,
+           INDEXCHANGE, PERCENTINDEXCHANGE
+    FROM MarketIndex
+    WHERE TRADINGDATE >= '{LOOKBACK_START}' AND COMGROUPCODE = 'VNINDEX'
+""")
+df_vni = sql_query(f"SELECT Ticker as TICKER, VNI FROM Sector_Map WHERE Ticker IN ('{tickers_str}')")
 
-df["TRADE_DATE"] = pd.to_datetime(df["TRADE_DATE"])
+df_md["TRADE_DATE"] = pd.to_datetime(df_md["TRADE_DATE"])
+df_idx["TRADE_DATE"] = pd.to_datetime(df_idx["TRADE_DATE"])
+df_md["VOLUME"] = pd.to_numeric(df_md["VOLUME"], errors="coerce").fillna(0)
+df_md = df_md[df_md["VOLUME"] > 0]
+df = df_md.merge(df_idx, on="TRADE_DATE", how="left").merge(df_vni, on="TICKER", how="left")
+
 df["VNI"] = df["VNI"].fillna("").str.strip()
 df = df.sort_values(["TICKER", "TRADE_DATE"])
 df["TURNOVER"] = df["PX_LAST"] * df["VOLUME"]
