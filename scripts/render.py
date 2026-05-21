@@ -335,8 +335,6 @@ def main():
     snapshot = json.loads((DATA_DIR / "latest.json").read_text())
     tmpl     = TEMPLATE.read_text()
 
-    vni       = snapshot["vnindex"]
-    universe  = snapshot["universe"]
     regime    = snapshot.get("regime", {})
 
     # Divergence detail

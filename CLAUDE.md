@@ -6,20 +6,9 @@ Updated every morning at 06:30 ICT by a scheduled Claude Code session.
 
 ## How to run the daily update
 
-When asked to run the daily update, do the following steps in order.
-**Steps 1 and 3 are independent — run them in parallel in a single message for speed.**
+When asked to run the daily update, there is now **only one data step** — everything comes from the Google Drive doc.
 
-### Step 1 — VNIndex snapshot
-Run `scripts/screening.py` via the `execute_python` MCP tool.
-Copy the code from `scripts/screening.py` exactly and execute it.
-Capture: `latest_date`, `vnindex` (close, change, change_pct).
-This is now a lightweight single-table query — no timeout risk.
-
-### Step 2 — Market breadth
-~~Removed~~ — breadth data now comes entirely from the Google Doc via the regime step.
-Skip this step; do not call `supabase_market_breadth`.
-
-### Step 3 — Regime indicators
+### Step 1 — Regime indicators (Google Drive → regime.py)
 
 **Do NOT use urllib, requests, subprocess, or WebFetch — all are blocked in this environment.**
 
@@ -58,23 +47,12 @@ Key keys in `regime` output:
 - `allocation` — probability-weighted recommended allocation %
 - `regime_name`, `divergence_flag`, `severity`
 
-### Step 4 — Chart data (NHNL and Breadth)
-Both `nhnl_chart` and `breadth_chart` come directly from the regime output — no separate calculation needed.
-The Google Doc is the source of truth for both. Just assign:
-```python
-nhnl_chart    = regime["nhnl_history"]    # keys: dates, nhnl, vnindex
-breadth_chart = regime["breadth_history"] # keys: dates, breadth_pct, vnindex
-mfi_chart     = regime["mfi_history"]     # keys: dates, mfi_abs, vnindex
-ad_chart      = regime["ad_history"]      # keys: dates, ad_abs, vnindex
-gap_chart     = regime["gap_history"]     # keys: dates, gap, vnindex
-```
-
-### Step 5 — Assemble data/latest.json
-Combine all of the above into `data/latest.json` with this structure:
+### Step 2 — Assemble data/latest.json
+All data comes from the regime output. Build the snapshot:
 ```python
 snap = {
-    "latest_date":  screening["latest_date"],
-    "vnindex":      screening["vnindex"],
+    "latest_date":  regime["date"],
+    "vnindex":      {"close": regime["vnindex"], "change": 0, "change_pct": 0},
     "regime":       regime,
     "nhnl_chart":   regime["nhnl_history"],
     "breadth_chart":regime["breadth_history"],
@@ -84,11 +62,11 @@ snap = {
 }
 ```
 
-### Step 6 — Render
+### Step 3 — Render
 Run: `python3 scripts/render.py`
 This writes `docs/index.html`, `docs/data/latest.json`, and `docs/data/YYYY-MM-DD.json`.
 
-### Step 7 — Commit and push
+### Step 4 — Commit and push
 ```
 git add data/latest.json docs/
 git commit -m "Daily update YYYY-MM-DD"
