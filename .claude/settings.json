@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__DCG__execute_python",
+      "mcp__Google-Drive__download_file_content"
+    ]
+  }
+}
