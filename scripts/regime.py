@@ -207,23 +207,56 @@ def calc_divergence(rows):
 # ---------------------------------------------------------------------------
 
 def _bear_score(div, rsi, breadth):
-    """Bearish risk score 0-100 for uptrend regimes. Higher = more risk."""
-    score = 0
+    """Bearish risk score 0-100 for uptrend regimes. Higher = more risk.
+    Returns (total_score, components_list)."""
+    components = []
+
     # Gap: RSI21 vs internal average (level divergence)
     gap = abs(div["gap"])
-    if   gap >= 30: score += 35
-    elif gap >= 20: score += 25
-    elif gap >= 10: score += 15
-    # Direction divergence (internals actively moving against RSI)
-    if div["dir_10d"]: score += 25
-    if div["dir_5d"]:  score += 15
+    if   gap >= 30: gap_pts = 35
+    elif gap >= 20: gap_pts = 25
+    elif gap >= 10: gap_pts = 15
+    else:           gap_pts = 0
+    gap_note = (
+        f"RSI21 is {div['gap']:+.1f}pts above internal avg — severe leadership gap" if gap >= 30 else
+        f"RSI21 is {div['gap']:+.1f}pts above internal avg — wide gap, index running ahead of breadth" if gap >= 20 else
+        f"RSI21 is {div['gap']:+.1f}pts above internal avg — moderate gap" if gap >= 10 else
+        f"RSI21 is {div['gap']:+.1f}pts vs internal avg — internals broadly aligned"
+    )
+    components.append({"label": "Gap (RSI21 − Avg Internals)", "value": f"{div['gap']:+.1f}", "note": gap_note, "pts": gap_pts})
+
+    # Direction divergence 10d
+    d10_pts  = 25 if div["dir_10d"] else 0
+    d10_note = ("3+ internals falling while RSI21 rising over 10 days — active distribution signal"
+                if div["dir_10d"] else "Internals not moving against RSI21 over 10 days — no direction warning")
+    components.append({"label": "Direction Divergence 10d", "value": "Yes" if div["dir_10d"] else "No", "note": d10_note, "pts": d10_pts})
+
+    # Direction divergence 5d
+    d5_pts  = 15 if div["dir_5d"] else 0
+    d5_note = ("3+ internals falling while RSI21 rising over 5 days — early rotation signal"
+               if div["dir_5d"] else "No short-term direction divergence over 5 days")
+    components.append({"label": "Direction Divergence 5d",  "value": "Yes" if div["dir_5d"]  else "No", "note": d5_note,  "pts": d5_pts})
+
     # Breadth level
-    if   breadth < 25: score += 20
-    elif breadth < 40: score += 10
-    elif breadth > 60: score -= 5
-    # RSI extension (overbought adds reversal risk)
-    if rsi > 70: score += 10
-    return max(0, min(100, score))
+    if   breadth < 25: brd_pts = 20; brd_note = f"Extremely narrow — only {breadth:.0f}% of stocks above MA50, distribution risk very high"
+    elif breadth < 40: brd_pts = 10; brd_note = f"Very narrow — only {breadth:.0f}% of stocks above MA50, headline index masking weak internals"
+    elif breadth < 60: brd_pts =  0; brd_note = f"Average breadth — {breadth:.0f}% of stocks above MA50, no additional concern"
+    elif breadth < 75: brd_pts = -5; brd_note = f"Strong breadth — {breadth:.0f}% of stocks above MA50, internals supportive"
+    else:              brd_pts = -5; brd_note = f"Very strong breadth — {breadth:.0f}% of stocks above MA50, broad participation"
+    components.append({"label": "Breadth (% above MA50)", "value": f"{breadth:.1f}%", "note": brd_note, "pts": brd_pts})
+
+    # RSI extension
+    if rsi > 70: rsi_pts = 10; rsi_note = f"RSI21={rsi:.1f} — overbought, elevated mean-reversion risk"
+    else:        rsi_pts =  0; rsi_note = f"RSI21={rsi:.1f} — not overbought, no extension penalty"
+    components.append({"label": "RSI21 Extension", "value": f"{rsi:.1f}", "note": rsi_note, "pts": rsi_pts})
+
+    total = max(0, min(100, sum(c["pts"] for c in components)))
+    if   total < 20: tier = "Clean"
+    elif total < 40: tier = "Caution"
+    elif total < 60: tier = "Warning"
+    else:            tier = "High Risk"
+
+    return total, tier, components
 
 
 def build_scenarios(rows, div, trend_label, breadth_label, mf_label, base_alloc):
@@ -235,7 +268,7 @@ def build_scenarios(rows, div, trend_label, breadth_label, mf_label, base_alloc)
     is_down = "Downtrend" in trend_label
 
     if is_up:
-        bs = _bear_score(div, rsi, breadth)
+        bs, bs_tier, bs_components = _bear_score(div, rsi, breadth)
 
         if bs < 20:   # ── Clean uptrend ──────────────────────────────────────
             sc = [
@@ -372,7 +405,12 @@ def build_scenarios(rows, div, trend_label, breadth_label, mf_label, base_alloc)
     total = sum(s["probability"] for s in sc)
     for s in sc:
         s["probability"] = round(s["probability"] / total * 100)
-    return sc
+
+    bear_detail = None
+    if is_up:
+        bear_detail = {"score": bs, "tier": bs_tier, "components": bs_components}
+
+    return sc, bear_detail
 
 
 # ---------------------------------------------------------------------------
@@ -456,7 +494,7 @@ def analyze(rows):
 
     regime_name = f"{trend_label} – {breadth_label} – {mf_summary}"
 
-    scenarios = build_scenarios(rows30, div, trend_label, breadth_label, mf_summary, alloc_score)
+    scenarios, bear_detail = build_scenarios(rows30, div, trend_label, breadth_label, mf_summary, alloc_score)
     phases    = build_phases(rows30)
 
     # Recommended allocation = probability-weighted average of scenario allocations
@@ -545,6 +583,7 @@ def analyze(rows):
         "divergence":     div,
         "allocation":     alloc,
         "scenarios":      scenarios,
+        "bear_detail":    bear_detail,
         "phases":         phases,
     }
 

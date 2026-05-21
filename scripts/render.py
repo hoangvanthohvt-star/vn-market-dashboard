@@ -395,6 +395,58 @@ def gap_verdict(gap):
 # Regime — scenario cards (DC style, s1/s2/s3)
 # ---------------------------------------------------------------------------
 
+def render_bear_score_table(regime):
+    bd = regime.get("bear_detail")
+    if not bd:
+        return ""
+    score = bd["score"]
+    tier  = bd["tier"]
+    tier_color = {"Clean": "#00BF6F", "Caution": "#C08F4F", "Warning": "#FF671B", "High Risk": "#FF0037"}.get(tier, "#97999B")
+    bar_w = min(100, score)
+
+    rows_html = ""
+    for c in bd["components"]:
+        pts = c["pts"]
+        if pts > 0:
+            pts_color = "#FF671B"
+            pts_str   = f"+{pts}"
+        elif pts < 0:
+            pts_color = "#00BF6F"
+            pts_str   = str(pts)
+        else:
+            pts_color = "#97999B"
+            pts_str   = "0"
+        val_bold = pts != 0
+        rows_html += f"""<tr>
+  <td style="padding:8px 12px;font-weight:600;color:#101820;white-space:nowrap;">{c['label']}</td>
+  <td style="padding:8px 12px;font-weight:{'800' if val_bold else '500'};color:{'#101820' if val_bold else '#97999B'};white-space:nowrap;">{c['value']}</td>
+  <td style="padding:8px 12px;color:#555;font-size:12px;line-height:1.4;">{c['note']}</td>
+  <td style="padding:8px 12px;font-weight:800;color:{pts_color};text-align:right;white-space:nowrap;">{pts_str} pts</td>
+</tr>"""
+
+    return f"""<div style="background:#f9f9f9;border:1px solid #eee;border-radius:12px;padding:18px 20px;margin-bottom:18px;">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#97999B;">Bear Score</div>
+    <div style="font-size:28px;font-weight:800;color:{tier_color};line-height:1;">{score}<span style="font-size:14px;font-weight:600;color:#97999B;"> / 100</span></div>
+    <div style="background:{tier_color};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.4px;">{tier.upper()}</div>
+    <div style="flex:1;min-width:120px;background:#e5e5e5;border-radius:4px;height:6px;">
+      <div style="width:{bar_w}%;background:{tier_color};height:6px;border-radius:4px;"></div>
+    </div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;font-family:Manrope,sans-serif;font-size:13px;">
+    <thead>
+      <tr style="border-bottom:1px solid #e0e0e0;">
+        <th style="padding:6px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#97999B;">Component</th>
+        <th style="padding:6px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#97999B;">Value</th>
+        <th style="padding:6px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#97999B;">Reading</th>
+        <th style="padding:6px 12px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#97999B;">Score</th>
+      </tr>
+    </thead>
+    <tbody>{rows_html}</tbody>
+  </table>
+</div>"""
+
+
 def render_scenario_cards(scenarios):
     out = []
     for i, s in enumerate(scenarios[:3]):
@@ -499,6 +551,7 @@ def main():
         "{{regime_sev_class}}":      sev_cls,
         "{{regime_allocation}}":     str(regime.get("allocation", "—")),
         "{{exec_warnings}}":         render_warnings(regime),
+        "{{bear_score_table}}":      render_bear_score_table(regime),
         # Metric cards
         "{{regime_metric_cards}}":   render_metric_cards(regime),
         # Charts
