@@ -230,6 +230,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 
 
 
+<!-- ══ RSI GAP CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">RSI 21D − NHNL RSI vs VNIndex · Danger zones: &gt;+30 · &lt;−20</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setGapRange(1)" id="gapBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setGapRange(2)" id="gapBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setGapRange(3)" id="gapBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="gapChart"></canvas></div>
+</div>
+
 <!-- ══ MAIN CHART ══ -->
 <div class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
@@ -244,32 +257,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 </div>
 
 <!-- ══ MFI CHART ══ -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">VNIndex vs MFI (Absolute)</h2>
-    <div style="display:flex;gap:6px;">
-      <button onclick="setMfiRange(1)" id="mfiBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
-      <button onclick="setMfiRange(2)" id="mfiBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setMfiRange(3)" id="mfiBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
-    </div>
-  </div>
-  <div class="chart-wrap" style="height:300px;"><canvas id="mfiChart"></canvas></div>
-</div>
-
-<!-- ══ RSI GAP CHART ══ -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">RSI 21D − NHNL RSI vs VNIndex · Danger zones: &gt;+30 · &lt;−20</h2>
-    <div style="display:flex;gap:6px;">
-      <button onclick="setGapRange(1)" id="gapBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
-      <button onclick="setGapRange(2)" id="gapBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setGapRange(3)" id="gapBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
-    </div>
-  </div>
-  <div class="chart-wrap" style="height:300px;"><canvas id="gapChart"></canvas></div>
-</div>
-
-<!-- ══ A/D LINE CHART ══ -->
 <div class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
     <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
