@@ -306,6 +306,189 @@ def render_scenario_cards(scenarios):
 
 
 # ---------------------------------------------------------------------------
+# Composite Man Masterplan narrative
+# ---------------------------------------------------------------------------
+
+def render_composite_man(regime):
+    if not regime:
+        return "<p style='color:#97999B;font-style:italic;'>No regime data available.</p>"
+
+    ind    = regime.get("indicators", {})
+    rsi    = ind.get("rsi21", 50)
+    breadth = ind.get("breadth_pct", 50)
+    nhnl   = ind.get("nhnl_rsi", 50)
+    price  = regime.get("vnindex", 0)
+    div    = regime.get("divergence", {})
+    gap    = div.get("gap", 0)
+    bear_d = regime.get("bear_detail", {})
+    bear_score = bear_d.get("score", 0) if bear_d else 0
+
+    # Phase detection
+    if rsi < 38 and breadth < 25:
+        phase = "markdown"
+        phase_label = "Markdown / Distribution Confirmed"
+        phase_color = "#FF0037"
+        summary = (
+            f"The Composite Man appears to have completed his distribution cycle and is now in active markdown. "
+            f"VNIndex RSI 21D has collapsed to {rsi:.1f} while breadth has fallen to {breadth:.1f}% — "
+            f"fewer than one in four stocks hold above their 50-day average. "
+            f"NHNL RSI at {nhnl:.1f} confirms new lows are dominating new highs across the universe. "
+            f"His strategy is to keep selling into any bounce, maintaining downward pressure on the index. "
+            f"Weak hands are being shaken out and liquidity is being absorbed at lower levels. "
+            f"Rallies at this stage are traps, not opportunities — they exist to offload remaining supply."
+        )
+        validation = (
+            f"RSI 21D remaining below 40, breadth unable to recover above 30%, "
+            f"and NHNL RSI failing to hold above 35 would confirm the markdown phase is intact."
+        )
+        invalidation = (
+            f"A breadth recovery above 40% on expanding volume, RSI 21D reclaiming 45, "
+            f"and NHNL RSI sustaining above 40 would suggest accumulation is beginning — "
+            f"Composite Man shifting from distribution to re-accumulation."
+        )
+
+    elif rsi < 48 and breadth < 40:
+        phase = "accumulation"
+        phase_label = "Accumulation / Base Building"
+        phase_color = "#C08F4F"
+        summary = (
+            f"The Composite Man is in an accumulation phase — quietly absorbing supply at {price:,.1f} "
+            f"while keeping the tape uninspiring enough to discourage retail participation. "
+            f"RSI 21D at {rsi:.1f} signals subdued momentum, and breadth at {breadth:.1f}% reflects "
+            f"a market where most stocks remain under pressure. "
+            f"NHNL RSI at {nhnl:.1f} shows that new highs are scarce, which suits his purpose: "
+            f"accumulate without attracting followers. "
+            f"The pattern is repeated tests of support with shrinking selling pressure on each retest. "
+            f"He is patient — the markup phase will only begin once he has absorbed sufficient supply at low prices."
+        )
+        validation = (
+            f"NHNL RSI recovering above 45, breadth clawing back above 40%, "
+            f"and RSI 21D crossing 50 on above-average volume would mark the spring — "
+            f"confirmation that accumulation is nearing completion."
+        )
+        invalidation = (
+            f"RSI 21D breaking below 35, breadth dropping under 25%, or a sustained expansion in new lows "
+            f"would signal that what looked like accumulation is in fact distribution — "
+            f"the Composite Man is selling, not buying."
+        )
+
+    elif rsi >= 50 and breadth >= 55 and nhnl >= 55:
+        phase = "markup_healthy"
+        phase_label = "Markup — Broad Participation"
+        phase_color = "#00BF6F"
+        summary = (
+            f"The Composite Man is in a healthy markup phase with the index at {price:,.1f}. "
+            f"RSI 21D at {rsi:.1f} confirms trend strength while breadth at {breadth:.1f}% shows "
+            f"the majority of VNI stocks are participating — this is broad-based buying, not narrow speculation. "
+            f"NHNL RSI at {nhnl:.1f} tells us new highs are expanding across the universe, "
+            f"exactly the internal structure he wants to see during genuine markup. "
+            f"His playbook is to push prices higher on expanding volume while breadth remains robust, "
+            f"keeping retail engaged and momentum traders adding fuel. "
+            f"This phase has room to run as long as internals remain healthy and the index avoids a gap divergence."
+        )
+        validation = (
+            f"Breadth holding above 55%, NHNL RSI sustaining above 50, "
+            f"and RSI 21D maintaining above 55 would confirm the markup phase is in full force — "
+            f"pullbacks should be bought."
+        )
+        invalidation = (
+            f"Breadth rolling over below 45%, NHNL RSI dropping under 40, "
+            f"or RSI 21D losing the 50 level would signal distribution is beginning — "
+            f"Composite Man starting to unload into retail buying."
+        )
+
+    elif rsi >= 52 and breadth < 42 and nhnl < 48:
+        phase = "distribution_test"
+        phase_label = "Distribution Test — Divergence Building"
+        phase_color = "#FF671B"
+        summary = (
+            f"The Composite Man is running a classic distribution play: the index at {price:,.1f} "
+            f"appears resilient on the surface while internals erode beneath. "
+            f"RSI 21D at {rsi:.1f} keeps the headline looking constructive, but breadth has slipped to "
+            f"{breadth:.1f}% and NHNL RSI at {nhnl:.1f} shows new highs are drying up fast. "
+            f"This gap between index strength and internal weakness — currently {gap:+.1f} points — "
+            f"is his fingerprint: sell into the strength he created, let weaker stocks absorb the selling. "
+            f"The bear score of {bear_score} signals that distribution pressure is elevated. "
+            f"Retail sees an index holding up; Composite Man is exiting through that buying."
+        )
+        validation = (
+            f"Gap divergence widening beyond +20, breadth failing to recover above 45%, "
+            f"and NHNL RSI sustaining below 40 would confirm the distribution is progressing — "
+            f"a markdown phase becomes increasingly likely."
+        )
+        invalidation = (
+            f"Breadth recovering above 50% with expanding new highs (NHNL RSI > 55) "
+            f"and the gap divergence closing below +10 would suggest Composite Man is re-accumulating, "
+            f"not distributing — the index strength is genuine participation, not a trap."
+        )
+
+    elif rsi >= 46 and breadth < 47:
+        phase = "markup_narrowing"
+        phase_label = "Late Markup — Narrowing Leadership"
+        phase_color = "#C08F4F"
+        summary = (
+            f"The Composite Man is in late markup with the index at {price:,.1f}, "
+            f"but the rally is increasingly carried by fewer stocks. "
+            f"RSI 21D at {rsi:.1f} still signals positive momentum, yet breadth at {breadth:.1f}% "
+            f"means less than half of VNI stocks are above their MA50 — the advance is narrowing. "
+            f"NHNL RSI at {nhnl:.1f} confirms that the universe of stocks making new highs is shrinking. "
+            f"Composite Man may still be riding the uptrend in index heavyweights while quietly distributing "
+            f"mid and small-cap positions into the lingering retail enthusiasm. "
+            f"This is a phase that demands caution: the trend is up but the foundation is thinning."
+        )
+        validation = (
+            f"Breadth recovering above 50% and NHNL RSI reclaiming 50 would reset the leadership "
+            f"to a healthy markup — the narrowing reverses and the bull trend is re-confirmed."
+        )
+        invalidation = (
+            f"Breadth breaking below 35% or RSI 21D losing 46 would signal the markup is over — "
+            f"Composite Man has finished distributing and markdown pressure is building."
+        )
+
+    else:
+        phase = "transition"
+        phase_label = "Transition / Indeterminate Phase"
+        phase_color = "#97999B"
+        summary = (
+            f"The Composite Man's intentions are difficult to read at this juncture. "
+            f"With RSI 21D at {rsi:.1f}, breadth at {breadth:.1f}%, and NHNL RSI at {nhnl:.1f}, "
+            f"the market sits in a transitional zone — not cleanly trending in either direction. "
+            f"Index at {price:,.1f} shows neither the internal breadth of a healthy markup nor "
+            f"the collapsed internals of a confirmed markdown. "
+            f"He may be in a re-test phase, probing both buyers and sellers to gauge remaining supply and demand. "
+            f"During such phases, he often engineers false moves in both directions to shake out committed positions. "
+            f"The wisest stance is to wait for a definitive break in internals before committing aggressively."
+        )
+        validation = (
+            f"Breadth moving decisively above 50% and NHNL RSI holding above 50 would confirm "
+            f"a new markup phase — Composite Man has absorbed supply and is ready to advance."
+        )
+        invalidation = (
+            f"Breadth dropping below 35% and RSI 21D losing 45 would signal a markdown is beginning — "
+            f"the transitional indecision has resolved to the downside."
+        )
+
+    html = f"""<div style="background:linear-gradient(135deg,#f9f9f9 0%,#fff 100%);border:1px solid #e8e8e8;border-left:4px solid {phase_color};border-radius:12px;padding:20px 24px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+    <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#97999B;">Phase Detected</span>
+    <span style="background:{phase_color};color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:0.4px;">{phase_label.upper()}</span>
+  </div>
+  <p style="margin:0 0 14px;font-size:14px;line-height:1.75;color:#101820;">{summary}</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+    <div style="background:#f0faf5;border:1px solid #b8e8d0;border-radius:8px;padding:12px 14px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#00BF6F;margin-bottom:6px;">✅ Validation — Confirms Current View</div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#101820;">{validation}</p>
+    </div>
+    <div style="background:#fff5f5;border:1px solid #f5c0c0;border-radius:8px;padding:12px 14px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#FF0037;margin-bottom:6px;">❌ Invalidation — Changes Our View</div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#101820;">{invalidation}</p>
+    </div>
+  </div>
+</div>"""
+    return html
+
+
+# ---------------------------------------------------------------------------
 # Regime — phase table rows
 # ---------------------------------------------------------------------------
 
@@ -381,6 +564,8 @@ def main():
         "{{regime_allocation}}":     str(regime.get("allocation", "—")),
         "{{exec_warnings}}":         render_warnings(regime),
         "{{bear_score_table}}":      render_bear_score_table(regime),
+        # Composite Man Masterplan
+        "{{composite_man_narrative}}": render_composite_man(regime),
         # Metric cards
         "{{regime_metric_cards}}":   render_metric_cards(regime),
         # Charts
