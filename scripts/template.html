@@ -275,6 +275,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
 </div>
 
+<!-- ══ MFI ABS CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Money Flow Index (Absolute)</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setMfiAbsRange(1)" id="mfiAbsBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setMfiAbsRange(2)" id="mfiAbsBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setMfiAbsRange(3)" id="mfiAbsBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="mfiAbsChart"></canvas></div>
+</div>
+
 <div class="footer">
   <a href="https://hoangvanthohvt-star.github.io/vn-market-dashboard/">VN Market Daily</a> ·
   data from MSSQL + Google Drive ·
@@ -469,55 +482,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 
 <script>
 (function(){
-  const M = {{mfi_chart_json}};
-  if(!M||!M.dates) return;
-  const ctx = document.getElementById('mfiChart').getContext('2d');
-
-  function makeChart(dates, mfi, vni) {
-    return new Chart(ctx, {
-      data: {
-        labels: dates,
-        datasets: [
-          {type:'line', label:'MFI (abs)',       data:mfi, borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
-          {type:'line', label:'VNIndex (right)', data:vni, borderColor:'#173F35', backgroundColor:'transparent',            fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        interaction:{mode:'index', intersect:false},
-        plugins:{
-          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
-          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
-            callbacks:{label:function(c){return c.dataset.label+': '+(c.parsed.y!=null?c.parsed.y.toFixed(1):' —');}}}
-        },
-        scales:{
-          y: {position:'left',  title:{display:true, text:'MFI (abs)', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
-          y1:{position:'right', title:{display:true, text:'VNIndex',   font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false},     ticks:{font:{family:'Manrope',size:11}}},
-          x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
-        }
-      }
-    });
-  }
-
-  const TDY = 250;
-  let mfiChart = makeChart(M.dates, M.mfi_abs, M.vnindex);
-
-  window.setMfiRange = function(years) {
-    const start = Math.max(0, M.dates.length - years * TDY);
-    mfiChart.destroy();
-    mfiChart = makeChart(M.dates.slice(start), M.mfi_abs.slice(start), M.vnindex.slice(start));
-    ['1Y','2Y','3Y'].forEach(k => {
-      const btn = document.getElementById('mfiBtn'+k);
-      const active = k === years+'Y';
-      btn.style.background  = active ? '#173F35' : '#fff';
-      btn.style.color       = active ? '#fff' : '';
-      btn.style.borderColor = active ? '#173F35' : '#ccc';
-    });
-  };
-})();
-</script>
-<script>
-(function(){
   const G = {{gap_chart_json}};
   if(!G||!G.dates) return;
   const ctx = document.getElementById('gapChart').getContext('2d');
@@ -636,6 +600,56 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     adChart = makeChart(AD.dates.slice(start), AD.ad_abs.slice(start), AD.vnindex.slice(start));
     ['1Y','2Y','3Y'].forEach(k => {
       const btn = document.getElementById('adBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background  = active ? '#173F35' : '#fff';
+      btn.style.color       = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const MFI = {{mfi_chart_json}};
+  if(!MFI||!MFI.dates) return;
+  const ctx = document.getElementById('mfiAbsChart').getContext('2d');
+
+  function makeChart(dates, mfi, vni) {
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'MFI (abs)',        data:mfi, borderColor:'#014ABD', backgroundColor:'rgba(1,74,189,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
+          {type:'line', label:'VNIndex (right)',   data:vni, borderColor:'#173F35', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.parsed.y!=null?c.parsed.y.toFixed(1):'—');}}}
+        },
+        scales:{
+          y: {position:'left',  title:{display:true, text:'MFI (abs)', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
+          y1:{position:'right', title:{display:true, text:'VNIndex',   font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false},     ticks:{font:{family:'Manrope',size:11}}},
+          x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  let mfiAbsChart = makeChart(MFI.dates, MFI.mfi_abs, MFI.vnindex);
+
+  window.setMfiAbsRange = function(years) {
+    const start = Math.max(0, MFI.dates.length - years * TDY);
+    mfiAbsChart.destroy();
+    mfiAbsChart = makeChart(MFI.dates.slice(start), MFI.mfi_abs.slice(start), MFI.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('mfiAbsBtn'+k);
       const active = k === years+'Y';
       btn.style.background  = active ? '#173F35' : '#fff';
       btn.style.color       = active ? '#fff' : '';
