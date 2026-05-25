@@ -733,10 +733,13 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   // Build full-length arrays
   const cum2026 = CUM_2026_RAW.concat(new Array(n - known).fill(null));
 
-  // Labels: real dates where known, then 'D94'...'D250'
-  const labels = DATES_2026.concat(
-    Array.from({length: n - known}, (_, i) => 'D' + (known + 2 + i))
-  );
+  // Approximate month start tdoy for future days (after tdoy 93 = May 25)
+  const MONTH_LABELS = {98:'Jun',119:'Jul',140:'Aug',161:'Sep',182:'Oct',202:'Nov',222:'Dec'};
+  const futureLabels = Array.from({length: n - known}, (_, i) => {
+    const tdoy = known + 2 + i;
+    return MONTH_LABELS[tdoy] || '';
+  });
+  const labels = DATES_2026.concat(futureLabels);
 
   const ctx = document.getElementById('seasChart').getContext('2d');
   new Chart(ctx, {
@@ -790,7 +793,20 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
           ticks: {font: {family: 'Manrope', size: 11}, callback: v => (v >= 0 ? '+' : '') + v + '%'}
         },
         x: {
-          ticks: {font: {family: 'Manrope', size: 10}, maxRotation: 45, maxTicksLimit: 24},
+          ticks: {
+            font: {family: 'Manrope', size: 10},
+            maxRotation: 45,
+            autoSkip: false,
+            callback: function(val, index) {
+              const lbl = this.getLabelForValue(val);
+              if (!lbl) return null;
+              // Real dates: show only the 1st of each month (yyyy-mm-01) or the first label
+              if (lbl.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return (lbl.slice(8) === '01' || index === 0) ? lbl.slice(0, 7) : null;
+              }
+              return lbl; // month name
+            }
+          },
           grid: {display: false}
         }
       }
