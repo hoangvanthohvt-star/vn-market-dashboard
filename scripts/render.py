@@ -306,6 +306,26 @@ def render_scenario_cards(scenarios):
 
 
 # ---------------------------------------------------------------------------
+# Seasonality — 2026 YTD cumulative return from full_history
+# ---------------------------------------------------------------------------
+
+def render_seasonality_2026(regime):
+    full = regime.get("full_history", {})
+    dates   = full.get("dates", [])
+    vnindex = full.get("vnindex", [])
+    pairs = [(d, v) for d, v in zip(dates, vnindex)
+             if d and d >= "2026-01-01" and v is not None]
+    if len(pairs) < 2:
+        return json.dumps({"dates": [], "cum_returns": []})
+    base  = pairs[0][1]           # Jan 5 = base day, not plotted
+    pairs = pairs[1:]             # start from Jan 6 (tdoy 2)
+    return json.dumps({
+        "dates":       [p[0] for p in pairs],
+        "cum_returns": [round((p[1] / base - 1) * 100, 4) for p in pairs],
+    })
+
+
+# ---------------------------------------------------------------------------
 # Composite Man Masterplan narrative
 # ---------------------------------------------------------------------------
 
@@ -564,6 +584,8 @@ def main():
         "{{regime_allocation}}":     str(regime.get("allocation", "—")),
         "{{exec_warnings}}":         render_warnings(regime),
         "{{bear_score_table}}":      render_bear_score_table(regime),
+        # Seasonality 2026 YTD
+        "{{seasonality_2026_json}}":   render_seasonality_2026(regime),
         # Composite Man Masterplan
         "{{composite_man_narrative}}": render_composite_man(regime),
         # Metric cards
