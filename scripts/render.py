@@ -449,206 +449,255 @@ def render_composite_man(regime):
 
     div_narrative = f"{div_s1} {div_s2} {div_s3} {div_s4}"
 
-    # Live context sentences — woven into each phase's narrative
-    _lc = []
+    # ── Multi-factor phase assessment ──────────────────────────────────────────
+    # Derive directional signals from actual VNIndex, breadth, and NHNL data
+    vni_trend_up   = (vni_5d  or 0) >  5  and (vni_10d or 0) >  0
+    vni_trend_dn   = (vni_5d  or 0) < -5
+    vni_stalling   = not vni_trend_up and not vni_trend_dn
 
-    if vni_5d is not None and vni_1d is not None:
-        v5_dir = "fallen" if vni_5d < 0 else "gained"
-        v1_dir = "fell" if vni_1d < 0 else "rose"
-        if vni_5d < 0 and vni_1d < 0:
-            mom_note = "selling pressure is sustained across multiple sessions, not a single-day event"
-        elif vni_5d > 0 and vni_1d > 0:
-            mom_note = "buying momentum is building with consistent follow-through"
-        elif vni_5d < 0 and vni_1d > 0:
-            mom_note = "yesterday's bounce looks like a temporary reprieve within a broader 5-day decline"
-        else:
-            mom_note = "yesterday's dip follows a broader 5-day advance — a healthy pause or the start of a reversal"
-        _lc.append(
-            f"VNIndex has {v5_dir} {abs(vni_5d):.1f} pts over 5 days and {v1_dir} {abs(vni_1d):.1f} pts yesterday — {mom_note}."
-        )
+    br_expanding   = (br_5d  or 0) >  1.5
+    br_contracting = (br_5d  or 0) < -1.5
+    br_wide        = (br_now or 0) >= 52
+    br_narrow      = (br_now or 0) <  38
 
-    if br_5d is not None and nhnl_abs_now is not None:
-        br_dir   = "expanded" if br_5d > 0 else "contracted"
-        br_note  = "breadth is improving though not yet decisive" if br_5d > 0 else "fewer stocks are holding above their 50-day averages"
-        nhnl_str = ""
-        if nhnl_5d is not None:
-            nhnl_dir  = "improved" if nhnl_5d > 0 else "deteriorated"
-            nhnl_str  = f"; NHNL net count has {nhnl_dir} {abs(nhnl_5d):.0f} to {nhnl_abs_now:+,.0f} over the same window"
-        _lc.append(
-            f"Breadth has {br_dir} {abs(br_5d):.1f} pp over 5 days to {br_now:.1f}%{nhnl_str} — {br_note}."
-        )
+    nhnl_improving = (nhnl_5d      or 0) >  20
+    nhnl_worsening = (nhnl_5d      or 0) < -20
+    nhnl_deep      = (nhnl_abs_now or 0) < -300
+    nhnl_ok        = (nhnl_abs_now or 0) >= -100
 
-    if gap_state in ("severe_bearish", "moderate_bearish"):
-        if dir5 == "resolving":
-            _lc.append(f"The RSI 21D gap of {gap:+.1f} pts above internals is now narrowing — RSI shed {abs(rsi_d5):.1f} pts over 5 days, a constructive sign that the divergence may be easing.")
-        elif dir5 == "deepening":
-            _lc.append(f"The RSI 21D gap of {gap:+.1f} pts above internals is widening as RSI held while breadth and NHNL deteriorated over 5 days — the classic fingerprint of distribution accelerating.")
-        elif dir5 == "broad_deterioration":
-            _lc.append(f"The RSI 21D gap ({gap:+.1f} pts) is compressing as both headline and internals fall together — broad-based selling, not selective distribution.")
-        else:
-            _lc.append(f"The RSI 21D gap of {gap:+.1f} pts above internals ({internal_avg:.1f}) is holding steady over 5 days — divergence is stable but unresolved.")
-    elif gap_state == "severe_bullish":
-        _lc.append(f"RSI 21D is running {abs(gap):.1f} pts below the internal average ({internal_avg:.1f}) — a bullish structural underpinning where internals are well ahead of the headline.")
-    elif gap_state == "moderate_bullish":
-        _lc.append(f"RSI 21D sits {abs(gap):.1f} pts below the internal average ({internal_avg:.1f}) — internals are outpacing the headline, a positive structural sign.")
-    elif gap_state == "aligned":
-        if dir5 == "broad_improvement":
-            _lc.append(f"RSI 21D and internals are aligned (gap: {gap:+.1f} pts) with both trending higher over 5 days — the absence of divergence is itself a bullish structural confirmation.")
-        elif dir5 == "broad_deterioration":
-            _lc.append(f"RSI 21D and internals are aligned (gap: {gap:+.1f} pts) but both trending lower — watch for divergence to form if RSI stabilises while breadth keeps falling.")
-        elif dir5 == "deepening":
-            _lc.append(f"RSI 21D and internals are currently aligned (gap: {gap:+.1f} pts), but the 5-day drift suggests a bearish divergence may be forming beneath the surface.")
-        else:
-            _lc.append(f"RSI 21D and internals are well-aligned (gap: {gap:+.1f} pts) — the current market move is broadly supported rather than driven by narrow leadership.")
+    bearish_gap = gap_state in ("severe_bearish", "moderate_bearish")
+    bullish_gap = gap_state in ("severe_bullish", "moderate_bullish")
 
-    live_context = " ".join(_lc)
-
-    # Phase detection
-    if rsi < 38 and breadth < 25:
+    # ── Phase priority (strongest evidence first) ──────────────────────────────
+    if vni_trend_dn and nhnl_deep and (nhnl_worsening or br_narrow):
+        # MARKDOWN: price falling, NHNL deeply negative and deteriorating
         phase = "markdown"
         phase_label = "Markdown / Distribution Confirmed"
         phase_color = "#FF0037"
+        v5s  = f"{abs(vni_5d):.1f}"  if vni_5d  is not None else "—"
+        v10s = f"{abs(vni_10d):.1f}" if vni_10d is not None else "—"
+        v10_dir = "lower" if (vni_10d or 0) < 0 else "higher"
+        nhnl_s     = f"{nhnl_abs_now:+,.0f}" if nhnl_abs_now is not None else "—"
+        nhnl_chg_s = f"{abs(nhnl_5d):.0f} further" if nhnl_5d is not None else ""
+        br_s     = f"{br_now:.1f}%"   if br_now  is not None else "—"
+        br_chg_s = f"{br_5d:+.1f} pp over 5 days" if br_5d is not None else ""
+        rsi_lag = (f" RSI 21D at {rsi:.1f} may still appear elevated — that is a lagging artefact: "
+                   f"the headline index is slower to price in the deterioration that breadth and NHNL have already confirmed."
+                   ) if rsi > 48 else ""
         summary = (
-            f"The Composite Man appears to have completed his distribution cycle and is now in active markdown. "
-            f"VNIndex RSI 21D has collapsed to {rsi:.1f} while breadth has fallen to {breadth:.1f}% — "
-            f"fewer than one in four stocks hold above their 50-day average. "
-            f"NHNL RSI at {nhnl:.1f} confirms new lows are dominating new highs across the universe. "
-            f"His strategy is to keep selling into any bounce, maintaining downward pressure on the index. "
-            f"Weak hands are being shaken out and liquidity is being absorbed at lower levels. "
-            f"Rallies at this stage are traps, not opportunities — they exist to offload remaining supply."
+            f"The Composite Man has moved into active markdown. "
+            f"VNIndex has shed {v5s} pts over 5 days and {v10s} pts over 10 days ({v10_dir}) — "
+            f"the selling pressure is sustained and multi-session, not a single-day event. "
+            f"Breadth stands at {br_s}{(f', {br_chg_s}' if br_chg_s else '')}, "
+            f"meaning fewer than two in five VNI stocks hold above their MA50 — "
+            f"the rank-and-file is being abandoned as supply overwhelms demand. "
+            f"The NHNL net count sits at {nhnl_s}"
+            f"{(f', having worsened by {nhnl_chg_s} in 5 days' if nhnl_chg_s else '')} — "
+            f"new lows are dominating across the entire universe.{rsi_lag} "
+            f"His playbook: sell into any bounce, use temporary strength to offload remaining supply, "
+            f"and keep weak hands shaking out at lower prices. Rallies here are exit windows, not opportunities."
         )
         validation = (
-            f"RSI 21D remaining below 40, breadth unable to recover above 30%, "
-            f"and NHNL RSI failing to hold above 35 would confirm the markdown phase is intact."
+            f"Price continuing lower, NHNL net count deteriorating further below {nhnl_s}, "
+            f"and breadth failing to recover above 40% would confirm the markdown phase is intact and progressing."
         )
         invalidation = (
-            f"A breadth recovery above 40% on expanding volume, RSI 21D reclaiming 45, "
-            f"and NHNL RSI sustaining above 40 would suggest accumulation is beginning — "
-            f"Composite Man shifting from distribution to re-accumulation."
+            f"Breadth recovering above 45% on expanding volume, NHNL net count improving for 3+ consecutive days, "
+            f"and VNIndex 5-day change turning positive would suggest accumulation is beginning — "
+            f"Composite Man shifting from active selling to re-accumulation at lower levels."
         )
 
-    elif rsi < 48 and breadth < 40:
-        phase = "accumulation"
-        phase_label = "Accumulation / Base Building"
-        phase_color = "#C08F4F"
-        summary = (
-            f"The Composite Man is in an accumulation phase — quietly absorbing supply at {price:,.1f} "
-            f"while keeping the tape uninspiring enough to discourage retail participation. "
-            f"RSI 21D at {rsi:.1f} signals subdued momentum, and breadth at {breadth:.1f}% reflects "
-            f"a market where most stocks remain under pressure. "
-            f"NHNL RSI at {nhnl:.1f} shows that new highs are scarce, which suits his purpose: "
-            f"accumulate without attracting followers. "
-            f"The pattern is repeated tests of support with shrinking selling pressure on each retest. "
-            f"He is patient — the markup phase will only begin once he has absorbed sufficient supply at low prices."
-        )
-        validation = (
-            f"NHNL RSI recovering above 45, breadth clawing back above 40%, "
-            f"and RSI 21D crossing 50 on above-average volume would mark the spring — "
-            f"confirmation that accumulation is nearing completion."
-        )
-        invalidation = (
-            f"RSI 21D breaking below 35, breadth dropping under 25%, or a sustained expansion in new lows "
-            f"would signal that what looked like accumulation is in fact distribution — "
-            f"the Composite Man is selling, not buying."
-        )
-
-    elif rsi >= 50 and breadth >= 55 and nhnl >= 55:
-        phase = "markup_healthy"
-        phase_label = "Markup — Broad Participation"
-        phase_color = "#00BF6F"
-        summary = (
-            f"The Composite Man is in a healthy markup phase with the index at {price:,.1f}. "
-            f"RSI 21D at {rsi:.1f} confirms trend strength while breadth at {breadth:.1f}% shows "
-            f"the majority of VNI stocks are participating — this is broad-based buying, not narrow speculation. "
-            f"NHNL RSI at {nhnl:.1f} tells us new highs are expanding across the universe, "
-            f"exactly the internal structure he wants to see during genuine markup. "
-            f"His playbook is to push prices higher on expanding volume while breadth remains robust, "
-            f"keeping retail engaged and momentum traders adding fuel. "
-            f"This phase has room to run as long as internals remain healthy and the index avoids a gap divergence."
-        )
-        validation = (
-            f"Breadth holding above 55%, NHNL RSI sustaining above 50, "
-            f"and RSI 21D maintaining above 55 would confirm the markup phase is in full force — "
-            f"pullbacks should be bought."
-        )
-        invalidation = (
-            f"Breadth rolling over below 45%, NHNL RSI dropping under 40, "
-            f"or RSI 21D losing the 50 level would signal distribution is beginning — "
-            f"Composite Man starting to unload into retail buying."
-        )
-
-    elif rsi >= 52 and breadth < 42 and nhnl < 48:
+    elif not vni_trend_dn and bearish_gap and (nhnl_worsening or br_contracting):
+        # DISTRIBUTION: price resilient/advancing while internals erode
         phase = "distribution_test"
         phase_label = "Distribution Test — Divergence Building"
         phase_color = "#FF671B"
+        vni_dir_s  = "advancing" if vni_trend_up else "holding"
+        v5s        = f"{vni_5d:+.1f}" if vni_5d is not None else "—"
+        br_s       = f"{br_now:.1f}%"  if br_now is not None else "—"
+        br_chg_s   = f"{br_5d:+.1f} pp" if br_5d is not None else "—"
+        nhnl_s     = f"{nhnl_abs_now:+,.0f}" if nhnl_abs_now is not None else "—"
+        nhnl_chg_s = f"{nhnl_5d:+.0f}" if nhnl_5d is not None else "—"
         summary = (
-            f"The Composite Man is running a classic distribution play: the index at {price:,.1f} "
-            f"appears resilient on the surface while internals erode beneath. "
-            f"RSI 21D at {rsi:.1f} keeps the headline looking constructive, but breadth has slipped to "
-            f"{breadth:.1f}% and NHNL RSI at {nhnl:.1f} shows new highs are drying up fast. "
-            f"This gap between index strength and internal weakness — currently {gap:+.1f} points — "
-            f"is his fingerprint: sell into the strength he created, let weaker stocks absorb the selling. "
-            f"The bear score of {bear_score} signals that distribution pressure is elevated. "
+            f"The Composite Man is running a classic distribution play: "
+            f"VNIndex is {vni_dir_s} ({v5s} pts over 5 days, price {price:,.1f}) "
+            f"while internals quietly erode beneath the surface. "
+            f"Breadth has moved {br_chg_s} over 5 days to {br_s} — "
+            f"only {br_s} of VNI stocks hold above their MA50, a narrow base that belies the headline resilience. "
+            f"NHNL net count sits at {nhnl_s} and has shifted {nhnl_chg_s} over 5 days, "
+            f"confirming new lows are expanding even as the index looks supported. "
+            f"The RSI 21D gap of {gap:+.1f} pts above internals is the fingerprint: "
+            f"he is selling into strength he engineered, letting weaker stocks absorb the supply. "
+            f"Bear score of {bear_score} signals elevated distribution pressure. "
             f"Retail sees an index holding up; Composite Man is exiting through that buying."
         )
         validation = (
             f"Gap divergence widening beyond +20, breadth failing to recover above 45%, "
-            f"and NHNL RSI sustaining below 40 would confirm the distribution is progressing — "
-            f"a markdown phase becomes increasingly likely."
+            f"and NHNL net count continuing to worsen below {nhnl_s} would confirm "
+            f"the distribution is progressing — markdown becomes increasingly likely."
         )
         invalidation = (
-            f"Breadth recovering above 50% with expanding new highs (NHNL RSI > 55) "
-            f"and the gap divergence closing below +10 would suggest Composite Man is re-accumulating, "
-            f"not distributing — the index strength is genuine participation, not a trap."
+            f"Breadth recovering above 50% on expanding volume, NHNL net count turning and holding positive, "
+            f"and the gap divergence closing below +10 would suggest the index strength is genuine — "
+            f"Composite Man re-accumulating, not distributing."
         )
 
-    elif rsi >= 46 and breadth < 47:
+    elif not vni_trend_dn and bearish_gap and br_narrow:
+        # DISTRIBUTION (stalling + narrow + gap): softer distribution signal
+        phase = "distribution_test"
+        phase_label = "Distribution Test — Divergence Building"
+        phase_color = "#FF671B"
+        v5s    = f"{vni_5d:+.1f}" if vni_5d is not None else "—"
+        br_s   = f"{br_now:.1f}%" if br_now is not None else "—"
+        nhnl_s = f"{nhnl_abs_now:+,.0f}" if nhnl_abs_now is not None else "—"
+        summary = (
+            f"The Composite Man's distribution fingerprint is visible. "
+            f"VNIndex is broadly flat ({v5s} pts, 5d, price {price:,.1f}) "
+            f"while internals are structurally weak: breadth at {br_s} and NHNL net count at {nhnl_s}. "
+            f"The RSI 21D gap of {gap:+.1f} pts above the internal average ({internal_avg:.1f}) "
+            f"signals the headline is being propped while distribution continues below the surface. "
+            f"Bear score of {bear_score} reflects the accumulated internal deterioration. "
+            f"This configuration — index stable, internals weak, RSI running ahead — "
+            f"is how distribution phases look before they tip into markdown."
+        )
+        validation = (
+            f"NHNL net count continuing to worsen and gap divergence holding above +15 "
+            f"would confirm the distribution phase is intact and deepening."
+        )
+        invalidation = (
+            f"Breadth recovering above 50% and NHNL net count turning consistently positive "
+            f"would signal the gap is a temporary artefact — Composite Man re-accumulating, not distributing."
+        )
+
+    elif vni_trend_up and br_wide and (nhnl_ok or nhnl_improving):
+        # MARKUP HEALTHY: price rising, broad participation, NHNL positive
+        phase = "markup_healthy"
+        phase_label = "Markup — Broad Participation"
+        phase_color = "#00BF6F"
+        v5s  = f"{vni_5d:+.1f}"  if vni_5d  is not None else "—"
+        v10s = f"{vni_10d:+.1f}" if vni_10d is not None else "—"
+        br_s     = f"{br_now:.1f}%" if br_now is not None else "—"
+        br_chg_s = f"{br_5d:+.1f} pp over 5 days" if br_5d is not None else ""
+        nhnl_s   = f"{nhnl_abs_now:+,.0f}" if nhnl_abs_now is not None else "—"
+        gap_interp = ("tracking" if abs(gap) <= 12 else ("ahead of" if gap < 0 else "slightly stretched above"))
+        summary = (
+            f"The Composite Man is in a healthy markup phase. "
+            f"VNIndex has gained {v5s} pts over 5 days and {v10s} pts over 10 days — "
+            f"the price trend is confirmed across multiple timeframes. "
+            f"Breadth at {br_s}{(f' ({br_chg_s})' if br_chg_s else '')} shows the majority of VNI stocks "
+            f"participating — this is broad-based buying, not narrow speculation. "
+            f"NHNL net count at {nhnl_s} confirms new highs are expanding across the universe. "
+            f"RSI 21D at {rsi:.1f} reflects trend strength, with the gap of {gap:+.1f} pts showing "
+            f"internals are {gap_interp} the headline. "
+            f"His playbook: push prices higher on expanding volume, keep retail engaged, "
+            f"and fuel momentum while internals remain healthy. This phase has room to run."
+        )
+        validation = (
+            f"Breadth holding above 55%, NHNL net count staying positive, "
+            f"and VNIndex 5-day change remaining above +10 pts would confirm "
+            f"the markup phase is in full force — pullbacks should be bought."
+        )
+        invalidation = (
+            f"Breadth rolling below 45% or NHNL net count deteriorating below -100 "
+            f"would signal distribution is beginning — Composite Man starting to unload into retail buying."
+        )
+
+    elif (vni_trend_up or (vni_stalling and (vni_5d or 0) > -3)) and (br_narrow or br_contracting):
+        # MARKUP NARROWING: price up/flat but breadth failing to follow
         phase = "markup_narrowing"
         phase_label = "Late Markup — Narrowing Leadership"
         phase_color = "#C08F4F"
+        v5s      = f"{vni_5d:+.1f}" if vni_5d is not None else "—"
+        br_s     = f"{br_now:.1f}%" if br_now is not None else "—"
+        br_chg_s = f"{br_5d:+.1f} pp over 5 days" if br_5d is not None else ""
+        nhnl_s   = f"{nhnl_abs_now:+,.0f}" if nhnl_abs_now is not None else "—"
+        nhnl_dir_s = ("worsening" if (nhnl_5d or 0) < -20 else ("improving" if (nhnl_5d or 0) > 20 else "flat"))
         summary = (
             f"The Composite Man is in late markup with the index at {price:,.1f}, "
             f"but the rally is increasingly carried by fewer stocks. "
-            f"RSI 21D at {rsi:.1f} still signals positive momentum, yet breadth at {breadth:.1f}% "
-            f"means less than half of VNI stocks are above their MA50 — the advance is narrowing. "
-            f"NHNL RSI at {nhnl:.1f} confirms that the universe of stocks making new highs is shrinking. "
-            f"Composite Man may still be riding the uptrend in index heavyweights while quietly distributing "
-            f"mid and small-cap positions into the lingering retail enthusiasm. "
-            f"This is a phase that demands caution: the trend is up but the foundation is thinning."
+            f"VNIndex has moved {v5s} pts over 5 days, yet breadth at {br_s}"
+            f"{(f' ({br_chg_s})' if br_chg_s else '')} means fewer than two in five "
+            f"VNI stocks hold above their MA50 — the advance is narrowing. "
+            f"NHNL net count at {nhnl_s} is {nhnl_dir_s}, confirming the universe of "
+            f"stocks making new highs is shrinking. "
+            f"RSI 21D at {rsi:.1f} with a gap of {gap:+.1f} pts suggests he may still be "
+            f"riding index heavyweights while quietly distributing mid and small-cap positions "
+            f"into lingering retail enthusiasm. "
+            f"This is a phase that demands caution: the trend may look intact at the index level "
+            f"but the internal foundation is thinning."
         )
         validation = (
-            f"Breadth recovering above 50% and NHNL RSI reclaiming 50 would reset the leadership "
-            f"to a healthy markup — the narrowing reverses and the bull trend is re-confirmed."
+            f"Breadth recovering above 50% and NHNL net count turning from {nhnl_s} toward positive "
+            f"would reset the leadership and confirm the markup is still healthy."
         )
         invalidation = (
-            f"Breadth breaking below 35% or RSI 21D losing 46 would signal the markup is over — "
-            f"Composite Man has finished distributing and markdown pressure is building."
+            f"Breadth breaking below 30% or VNIndex 5-day change turning below -20 pts would signal "
+            f"the markup is over — Composite Man has finished distributing and markdown pressure is building."
+        )
+
+    elif (vni_trend_dn or vni_stalling) and (nhnl_deep or (nhnl_abs_now or 0) < -150) and (nhnl_improving or br_expanding):
+        # ACCUMULATION: price down/flat, internals deeply negative but showing early turns
+        phase = "accumulation"
+        phase_label = "Accumulation / Base Building"
+        phase_color = "#C08F4F"
+        v5s      = f"{vni_5d:+.1f}" if vni_5d is not None else "—"
+        br_s     = f"{br_now:.1f}%" if br_now is not None else "—"
+        br_chg_s = f"{br_5d:+.1f} pp over 5 days" if br_5d is not None else ""
+        nhnl_s     = f"{nhnl_abs_now:+,.0f}" if nhnl_abs_now is not None else "—"
+        nhnl_chg_s = f"{nhnl_5d:+.0f}" if nhnl_5d is not None else "—"
+        turn_parts = []
+        if nhnl_improving:
+            turn_parts.append(f"NHNL net count has improved {nhnl_chg_s} over 5 days to {nhnl_s} — new lows are receding, an early signal")
+        if br_expanding:
+            turn_parts.append(f"breadth has expanded {br_5d:+.1f} pp over 5 days to {br_s} — more stocks are firming above their MA50")
+        turn_note = (". ".join(turn_parts).capitalize() + ". ") if turn_parts else ""
+        summary = (
+            f"The Composite Man appears to be in accumulation — quietly absorbing supply at {price:,.1f} "
+            f"while keeping the tape uninspiring enough to discourage retail participation. "
+            f"VNIndex has moved {v5s} pts over 5 days — price is under pressure or stalling, "
+            f"which suits his purpose: accumulate without attracting followers. "
+            f"Breadth at {br_s} and NHNL net count at {nhnl_s} remain deeply negative, "
+            f"confirming most stocks are still under distribution pressure. "
+            f"{turn_note}"
+            f"The pattern to watch: repeated tests of support with shrinking selling pressure on each retest. "
+            f"He is patient — the markup phase will only begin once he has absorbed sufficient supply."
+        )
+        validation = (
+            f"NHNL net count improving consistently toward -150 or better, breadth clawing back above 40%, "
+            f"and VNIndex 5-day change turning and holding positive would mark the spring — "
+            f"confirmation that accumulation is nearing completion."
+        )
+        invalidation = (
+            f"VNIndex accelerating lower (5d change worsening below -50 pts), breadth collapsing under 20%, "
+            f"or NHNL net count making new lows would signal this is not accumulation but active markdown."
         )
 
     else:
+        # TRANSITION: mixed signals, no dominant phase
         phase = "transition"
         phase_label = "Transition / Indeterminate Phase"
         phase_color = "#97999B"
+        v5s    = f"{vni_5d:+.1f}" if vni_5d is not None else "—"
+        br_s   = f"{br_now:.1f}%" if br_now is not None else "—"
+        nhnl_s = f"{nhnl_abs_now:+,.0f}" if nhnl_abs_now is not None else "—"
         summary = (
             f"The Composite Man's intentions are difficult to read at this juncture. "
-            f"With RSI 21D at {rsi:.1f}, breadth at {breadth:.1f}%, and NHNL RSI at {nhnl:.1f}, "
-            f"the market sits in a transitional zone — not cleanly trending in either direction. "
-            f"Index at {price:,.1f} shows neither the internal breadth of a healthy markup nor "
-            f"the collapsed internals of a confirmed markdown. "
+            f"VNIndex has moved {v5s} pts over 5 days to {price:,.1f}, breadth sits at {br_s}, "
+            f"and NHNL net count at {nhnl_s} — the market shows neither the broad participation "
+            f"of a healthy markup nor the collapsed internals of a confirmed markdown. "
+            f"RSI 21D at {rsi:.1f} with a gap of {gap:+.1f} pts sits in a transitional zone. "
             f"He may be in a re-test phase, probing both buyers and sellers to gauge remaining supply and demand. "
-            f"During such phases, he often engineers false moves in both directions to shake out committed positions. "
+            f"During such phases he often engineers false moves in both directions to shake out committed positions. "
             f"The wisest stance is to wait for a definitive break in internals before committing aggressively."
         )
         validation = (
-            f"Breadth moving decisively above 50% and NHNL RSI holding above 50 would confirm "
-            f"a new markup phase — Composite Man has absorbed supply and is ready to advance."
+            f"Breadth moving decisively above 50% and NHNL net count recovering consistently above -100 "
+            f"would confirm a new markup phase — Composite Man has absorbed supply and is ready to advance."
         )
         invalidation = (
-            f"Breadth dropping below 35% and RSI 21D losing 45 would signal a markdown is beginning — "
-            f"the transitional indecision has resolved to the downside."
+            f"Breadth dropping below 30% and VNIndex 5-day change turning below -30 pts would signal "
+            f"a markdown is beginning — the transitional indecision has resolved to the downside."
         )
-
-    summary = summary + " " + live_context
 
     def _chg_row(label, val, pos_good=True):
         if val is None:
