@@ -329,6 +329,13 @@ def render_seasonality_2026(regime):
 # Composite Man Masterplan narrative
 # ---------------------------------------------------------------------------
 
+def _chg(arr, n):
+    """arr[-1] - arr[-(n+1)], or None if insufficient data."""
+    if len(arr) > n and arr[-1] is not None and arr[-(n+1)] is not None:
+        return arr[-1] - arr[-(n+1)]
+    return None
+
+
 def render_composite_man(regime):
     if not regime:
         return "<p style='color:#97999B;font-style:italic;'>No regime data available.</p>"
@@ -342,6 +349,105 @@ def render_composite_man(regime):
     gap    = div.get("gap", 0)
     bear_d = regime.get("bear_detail", {})
     bear_score = bear_d.get("score", 0) if bear_d else 0
+
+    # Recent changes data
+    hist       = regime.get("history", {})
+    h_vni      = hist.get("vnindex", [])
+    h_breadth  = hist.get("breadth", [])
+    nhnl_abs   = regime.get("nhnl_history", {}).get("nhnl", [])
+
+    vni_now      = h_vni[-1]     if h_vni     else None
+    br_now       = h_breadth[-1] if h_breadth else None
+    nhnl_abs_now = nhnl_abs[-1]  if nhnl_abs  else None
+
+    vni_1d,  vni_5d,  vni_10d  = _chg(h_vni, 1),     _chg(h_vni, 5),     _chg(h_vni, 10)
+    br_1d,   br_5d,   br_10d   = _chg(h_breadth, 1), _chg(h_breadth, 5), _chg(h_breadth, 10)
+    nhnl_1d, nhnl_5d, nhnl_10d = _chg(nhnl_abs, 1),  _chg(nhnl_abs, 5),  _chg(nhnl_abs, 10)
+
+    # Divergence dynamics data
+    d5           = div.get("detail", {}).get("5d",  {})
+    d10          = div.get("detail", {}).get("10d", {})
+    rsi_d5       = d5.get("rsi21", 0)   or 0
+    br_d5        = d5.get("breadth", 0) or 0
+    nhnl_d5      = d5.get("nhnl", 0)    or 0
+    rsi_d10      = d10.get("rsi21", 0)  or 0
+    br_d10       = d10.get("breadth", 0) or 0
+    nhnl_d10     = d10.get("nhnl", 0)   or 0
+    severity     = div.get("severity", "None")
+    internal_avg = div.get("internal_avg", 0) or 0
+
+    avg_int_d5  = (br_d5  + nhnl_d5)  / 2
+    avg_int_d10 = (br_d10 + nhnl_d10) / 2
+
+    if rsi_d5 < -1 and avg_int_d5 > 1:
+        dir5 = "resolving"
+    elif rsi_d5 > 1 and avg_int_d5 < -1:
+        dir5 = "deepening"
+    elif rsi_d5 < -1 and avg_int_d5 < -1:
+        dir5 = "broad_deterioration"
+    elif rsi_d5 > 1 and avg_int_d5 > 1:
+        dir5 = "broad_improvement"
+    else:
+        dir5 = "stable"
+
+    if gap > 20:
+        gap_state = "severe_bearish"
+        gap_desc  = f"RSI 21D is running {gap:+.1f} pts above the internal average ({internal_avg:.1f}) — a severe bearish divergence"
+    elif gap > 12:
+        gap_state = "moderate_bearish"
+        gap_desc  = f"RSI 21D sits {gap:+.1f} pts above the internal average ({internal_avg:.1f}) — a moderate bearish gap is in place"
+    elif gap < -20:
+        gap_state = "severe_bullish"
+        gap_desc  = f"RSI 21D is {abs(gap):.1f} pts below the internal average ({internal_avg:.1f}) — internals are significantly stronger than the headline"
+    elif gap < -12:
+        gap_state = "moderate_bullish"
+        gap_desc  = f"RSI 21D sits {abs(gap):.1f} pts below the internal average ({internal_avg:.1f}) — internals are outpacing the headline index"
+    else:
+        gap_state = "aligned"
+        gap_desc  = f"RSI 21D and internal indicators are closely aligned (gap: {gap:+.1f} pts, internal avg: {internal_avg:.1f})"
+
+    rsi_d5_dir = "fell" if rsi_d5 < 0 else "rose"
+    br_d5_dir  = "gained" if br_d5 > 0 else "lost"
+    nh_d5_dir  = "gained" if nhnl_d5 > 0 else "lost"
+
+    div_s1 = f"{gap_desc}."
+    if dir5 == "resolving":
+        div_s2 = (f"Over 5 days, RSI 21D {rsi_d5_dir} {abs(rsi_d5):.1f} pts while breadth {br_d5_dir} {abs(br_d5):.1f} pts "
+                  f"and NHNL RSI {nh_d5_dir} {abs(nhnl_d5):.1f} pts — the gap is actively closing as internals recover faster than the headline.")
+    elif dir5 == "deepening":
+        div_s2 = (f"Over 5 days, RSI 21D {rsi_d5_dir} {abs(rsi_d5):.1f} pts while breadth {br_d5_dir} {abs(br_d5):.1f} pts "
+                  f"and NHNL RSI {nh_d5_dir} {abs(nhnl_d5):.1f} pts — divergence is deepening with headline momentum running counter to internal health.")
+    elif dir5 == "broad_deterioration":
+        div_s2 = (f"Over 5 days, RSI 21D {rsi_d5_dir} {abs(rsi_d5):.1f} pts alongside breadth losing {abs(br_d5):.1f} pts "
+                  f"and NHNL RSI losing {abs(nhnl_d5):.1f} pts — this is broad deterioration rather than a classic divergence pattern.")
+    elif dir5 == "broad_improvement":
+        div_s2 = (f"Over 5 days, RSI 21D {rsi_d5_dir} {abs(rsi_d5):.1f} pts together with breadth gaining {abs(br_d5):.1f} pts "
+                  f"and NHNL RSI gaining {abs(nhnl_d5):.1f} pts — broad improvement with headline and internals moving in tandem.")
+    else:
+        div_s2 = (f"Over 5 days, RSI 21D moved {rsi_d5:+.1f} pts with breadth at {br_d5:+.1f} pts "
+                  f"and NHNL RSI at {nhnl_d5:+.1f} pts — mixed signals with no clear directional bias.")
+
+    rsi_d10_dir = "falling" if rsi_d10 < 0 else "rising"
+    int_d10_dir = "recovering" if avg_int_d10 > 0 else "deteriorating"
+    div_s3 = (f"The 10-day view shows RSI 21D {rsi_d10_dir} {rsi_d10:+.1f} pts with internals {int_d10_dir} "
+              f"(breadth {br_d10:+.1f} pts, NHNL RSI {nhnl_d10:+.1f} pts).")
+
+    if gap_state in ("severe_bearish", "moderate_bearish") and dir5 == "resolving":
+        div_s4 = "If internals continue recovering toward RSI levels the divergence risk diminishes — a healthier, broader rally could follow."
+    elif gap_state in ("severe_bearish", "moderate_bearish") and dir5 == "deepening":
+        div_s4 = "A widening gap with internals lagging the headline is the most dangerous configuration — distribution tends to accelerate at this stage."
+    elif gap_state in ("severe_bearish", "moderate_bearish") and dir5 == "broad_deterioration":
+        div_s4 = "Both headline and internals deteriorating together reduces the divergence gap but broadens systemic downside risk."
+    elif gap_state == "aligned" and dir5 == "broad_improvement":
+        div_s4 = "Alignment between headline and internals with both trending up is the healthiest configuration — no divergence risk, trend extension likely."
+    elif gap_state == "aligned" and dir5 == "broad_deterioration":
+        div_s4 = "Watch for gap divergence to emerge if RSI 21D holds while breadth continues falling — this is the sequence where divergences are born."
+    elif gap_state in ("moderate_bullish", "severe_bullish") and dir5 in ("resolving", "broad_improvement"):
+        div_s4 = "Internals leading the headline higher is a bullish structural signal — the type of confirmation that precedes sustained markup phases."
+    else:
+        div_s4 = f"With divergence severity at '{severity}', the current setup warrants monitoring but has not yet reached a critical threshold."
+
+    div_narrative = f"{div_s1} {div_s2} {div_s3} {div_s4}"
 
     # Phase detection
     if rsi < 38 and breadth < 25:
@@ -488,13 +594,41 @@ def render_composite_man(regime):
             f"the transitional indecision has resolved to the downside."
         )
 
+    def _chg_row(label, val, pos_good=True):
+        if val is None:
+            return (f"<div style='display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:2px 0;'>"
+                    f"<span style='color:#97999B;'>{label}</span><span style='color:#97999B;'>—</span></div>")
+        good  = val > 0 if pos_good else val < 0
+        color = "#00BF6F" if good else "#FF0037"
+        arrow = "▲" if val > 0 else ("▼" if val < 0 else "→")
+        return (f"<div style='display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:2px 0;'>"
+                f"<span style='color:#97999B;'>{label}</span>"
+                f"<span style='color:{color};font-weight:700;'>{val:+.1f} {arrow}</span></div>")
+
+    def _tile(label, val_str, r1d, r5d, r10d, pos_good=True):
+        rows = _chg_row("1d", r1d, pos_good) + _chg_row("5d", r5d, pos_good) + _chg_row("10d", r10d, pos_good)
+        return (f"<div style='flex:1;min-width:160px;background:#f5f5f5;border-radius:10px;padding:14px 16px;'>"
+                f"<div style='font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#97999B;margin-bottom:6px;'>{label}</div>"
+                f"<div style='font-size:20px;font-weight:800;color:#101820;margin-bottom:10px;'>{val_str}</div>"
+                f"<div style='display:flex;flex-direction:column;gap:2px;'>{rows}</div></div>")
+
+    vni_tile  = _tile("VNIndex",
+                      f"{vni_now:,.1f}"  if vni_now  is not None else "—",
+                      vni_1d,  vni_5d,  vni_10d)
+    br_tile   = _tile("Breadth % &gt; MA50",
+                      f"{br_now:.1f}%"  if br_now   is not None else "—",
+                      br_1d,   br_5d,   br_10d)
+    nhnl_tile = _tile("NHNL Absolute",
+                      f"{nhnl_abs_now:+,.0f}" if nhnl_abs_now is not None else "—",
+                      nhnl_1d, nhnl_5d, nhnl_10d)
+
     html = f"""<div style="background:linear-gradient(135deg,#f9f9f9 0%,#fff 100%);border:1px solid #e8e8e8;border-left:4px solid {phase_color};border-radius:12px;padding:20px 24px;">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
     <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#97999B;">Phase Detected</span>
     <span style="background:{phase_color};color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:0.4px;">{phase_label.upper()}</span>
   </div>
   <p style="margin:0 0 14px;font-size:14px;line-height:1.75;color:#101820;">{summary}</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
     <div style="background:#f0faf5;border:1px solid #b8e8d0;border-radius:8px;padding:12px 14px;">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#00BF6F;margin-bottom:6px;">✅ Validation — Confirms Current View</div>
       <p style="margin:0;font-size:13px;line-height:1.6;color:#101820;">{validation}</p>
@@ -503,6 +637,14 @@ def render_composite_man(regime):
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#FF0037;margin-bottom:6px;">❌ Invalidation — Changes Our View</div>
       <p style="margin:0;font-size:13px;line-height:1.6;color:#101820;">{invalidation}</p>
     </div>
+  </div>
+  <div style="margin-bottom:16px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#97999B;margin-bottom:10px;">Recent Changes</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">{vni_tile}{br_tile}{nhnl_tile}</div>
+  </div>
+  <div style="background:#f5f5f5;border-radius:10px;padding:14px 16px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#97999B;margin-bottom:8px;">Divergence Dynamics</div>
+    <p style="margin:0;font-size:13px;line-height:1.7;color:#101820;">{div_narrative}</p>
   </div>
 </div>"""
     return html
