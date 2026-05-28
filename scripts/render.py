@@ -449,6 +449,60 @@ def render_composite_man(regime):
 
     div_narrative = f"{div_s1} {div_s2} {div_s3} {div_s4}"
 
+    # Live context sentences — woven into each phase's narrative
+    _lc = []
+
+    if vni_5d is not None and vni_1d is not None:
+        v5_dir = "fallen" if vni_5d < 0 else "gained"
+        v1_dir = "fell" if vni_1d < 0 else "rose"
+        if vni_5d < 0 and vni_1d < 0:
+            mom_note = "selling pressure is sustained across multiple sessions, not a single-day event"
+        elif vni_5d > 0 and vni_1d > 0:
+            mom_note = "buying momentum is building with consistent follow-through"
+        elif vni_5d < 0 and vni_1d > 0:
+            mom_note = "yesterday's bounce looks like a temporary reprieve within a broader 5-day decline"
+        else:
+            mom_note = "yesterday's dip follows a broader 5-day advance — a healthy pause or the start of a reversal"
+        _lc.append(
+            f"VNIndex has {v5_dir} {abs(vni_5d):.1f} pts over 5 days and {v1_dir} {abs(vni_1d):.1f} pts yesterday — {mom_note}."
+        )
+
+    if br_5d is not None and nhnl_abs_now is not None:
+        br_dir   = "expanded" if br_5d > 0 else "contracted"
+        br_note  = "breadth is improving though not yet decisive" if br_5d > 0 else "fewer stocks are holding above their 50-day averages"
+        nhnl_str = ""
+        if nhnl_5d is not None:
+            nhnl_dir  = "improved" if nhnl_5d > 0 else "deteriorated"
+            nhnl_str  = f"; NHNL net count has {nhnl_dir} {abs(nhnl_5d):.0f} to {nhnl_abs_now:+,.0f} over the same window"
+        _lc.append(
+            f"Breadth has {br_dir} {abs(br_5d):.1f} pp over 5 days to {br_now:.1f}%{nhnl_str} — {br_note}."
+        )
+
+    if gap_state in ("severe_bearish", "moderate_bearish"):
+        if dir5 == "resolving":
+            _lc.append(f"The RSI 21D gap of {gap:+.1f} pts above internals is now narrowing — RSI shed {abs(rsi_d5):.1f} pts over 5 days, a constructive sign that the divergence may be easing.")
+        elif dir5 == "deepening":
+            _lc.append(f"The RSI 21D gap of {gap:+.1f} pts above internals is widening as RSI held while breadth and NHNL deteriorated over 5 days — the classic fingerprint of distribution accelerating.")
+        elif dir5 == "broad_deterioration":
+            _lc.append(f"The RSI 21D gap ({gap:+.1f} pts) is compressing as both headline and internals fall together — broad-based selling, not selective distribution.")
+        else:
+            _lc.append(f"The RSI 21D gap of {gap:+.1f} pts above internals ({internal_avg:.1f}) is holding steady over 5 days — divergence is stable but unresolved.")
+    elif gap_state == "severe_bullish":
+        _lc.append(f"RSI 21D is running {abs(gap):.1f} pts below the internal average ({internal_avg:.1f}) — a bullish structural underpinning where internals are well ahead of the headline.")
+    elif gap_state == "moderate_bullish":
+        _lc.append(f"RSI 21D sits {abs(gap):.1f} pts below the internal average ({internal_avg:.1f}) — internals are outpacing the headline, a positive structural sign.")
+    elif gap_state == "aligned":
+        if dir5 == "broad_improvement":
+            _lc.append(f"RSI 21D and internals are aligned (gap: {gap:+.1f} pts) with both trending higher over 5 days — the absence of divergence is itself a bullish structural confirmation.")
+        elif dir5 == "broad_deterioration":
+            _lc.append(f"RSI 21D and internals are aligned (gap: {gap:+.1f} pts) but both trending lower — watch for divergence to form if RSI stabilises while breadth keeps falling.")
+        elif dir5 == "deepening":
+            _lc.append(f"RSI 21D and internals are currently aligned (gap: {gap:+.1f} pts), but the 5-day drift suggests a bearish divergence may be forming beneath the surface.")
+        else:
+            _lc.append(f"RSI 21D and internals are well-aligned (gap: {gap:+.1f} pts) — the current market move is broadly supported rather than driven by narrow leadership.")
+
+    live_context = " ".join(_lc)
+
     # Phase detection
     if rsi < 38 and breadth < 25:
         phase = "markdown"
@@ -594,6 +648,8 @@ def render_composite_man(regime):
             f"the transitional indecision has resolved to the downside."
         )
 
+    summary = summary + " " + live_context
+
     def _chg_row(label, val, pos_good=True):
         if val is None:
             return (f"<div style='display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:2px 0;'>"
@@ -638,13 +694,9 @@ def render_composite_man(regime):
       <p style="margin:0;font-size:13px;line-height:1.6;color:#101820;">{invalidation}</p>
     </div>
   </div>
-  <div style="margin-bottom:16px;">
+  <div>
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#97999B;margin-bottom:10px;">Recent Changes</div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;">{vni_tile}{br_tile}{nhnl_tile}</div>
-  </div>
-  <div style="background:#f5f5f5;border-radius:10px;padding:14px 16px;">
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#97999B;margin-bottom:8px;">Divergence Dynamics</div>
-    <p style="margin:0;font-size:13px;line-height:1.7;color:#101820;">{div_narrative}</p>
   </div>
 </div>"""
     return html
