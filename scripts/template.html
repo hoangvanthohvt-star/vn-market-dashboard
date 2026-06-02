@@ -178,6 +178,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap" style="height:300px;"><canvas id="breadthChart"></canvas></div>
 </div>
 
+<!-- ══ MFI ABS CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Money Flow Index (Absolute)</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setMfiAbsRange(1)" id="mfiAbsBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setMfiAbsRange(2)" id="mfiAbsBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setMfiAbsRange(3)" id="mfiAbsBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="mfiAbsChart"></canvas></div>
+</div>
+
 <!-- ══ SEASONALITY CHART ══ -->
 <div class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
@@ -269,19 +282,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     </div>
   </div>
   <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
-</div>
-
-<!-- ══ MFI ABS CHART ══ -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">VNIndex vs Money Flow Index (Absolute)</h2>
-    <div style="display:flex;gap:6px;">
-      <button onclick="setMfiAbsRange(1)" id="mfiAbsBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
-      <button onclick="setMfiAbsRange(2)" id="mfiAbsBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setMfiAbsRange(3)" id="mfiAbsBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
-    </div>
-  </div>
-  <div class="chart-wrap" style="height:300px;"><canvas id="mfiAbsChart"></canvas></div>
 </div>
 
 <!-- ══ MFI CHART ══ -->
