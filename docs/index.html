@@ -142,7 +142,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="header-top">
     <div>
       <h1>Market Regime</h1>
-      <div class="subtitle">2026 May 28 - 16:51</div>
+      <div class="subtitle">2026 Jun 02 - 15:44</div>
     </div>
   </div>
 </div>
@@ -366,19 +366,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
 </div>
 
-<!-- ══ MFI CHART ══ -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
-    <div style="display:flex;gap:6px;">
-      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
-      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
-    </div>
-  </div>
-  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
-</div>
-
 <!-- ══ MFI ABS CHART ══ -->
 <div class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
@@ -390,6 +377,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     </div>
   </div>
   <div class="chart-wrap" style="height:300px;"><canvas id="mfiAbsChart"></canvas></div>
+</div>
+
+<!-- ══ MFI CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
 </div>
 
 <div class="footer">
