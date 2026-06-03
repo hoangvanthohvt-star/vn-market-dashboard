@@ -60,6 +60,7 @@ snap = {
     "ad_chart":     regime["ad_history"],
     "gap_chart":    regime["gap_history"],
     "ma200_chart":  regime["ma200_history"],
+    "rs_chart":     regime["rs_history"],
 }
 ```
 

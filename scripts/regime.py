@@ -56,6 +56,8 @@ def parse_doc(text):
                 "ad_abs":      float(parts[9])  if len(parts) > 9  else None,
                 "nhnl_abs":    float(parts[10]) if len(parts) > 10 else None,
                 "ma200_pct":   float(parts[11].replace("%","")) if len(parts) > 11 else None,
+                "vn30":        float(parts[12]) if len(parts) > 12 else None,
+                "vnmidcap":    float(parts[13]) if len(parts) > 13 else None,
             }
             rows.append(row)
         except (ValueError, IndexError):
@@ -559,6 +561,15 @@ def analyze(rows):
         "vnindex":  [r["vnindex"]            for r in rows],
     }
 
+    def _ratio(r):
+        v30, mid = r.get("vn30"), r.get("vnmidcap")
+        return round(mid / v30, 4) if v30 and mid and v30 != 0 else None
+
+    rs_history = {
+        "dates": [r["date"]    for r in rows],
+        "ratio": [_ratio(r)    for r in rows],
+    }
+
     return {
         "date":            latest["date"],
         "vnindex":         latest["vnindex"],
@@ -570,6 +581,7 @@ def analyze(rows):
         "ad_history":      ad_history,
         "gap_history":     gap_history,
         "ma200_history":   ma200_history,
+        "rs_history":      rs_history,
         "indicators": {
             "rsi21":       latest["rsi21"],
             "rsi70":       latest.get("rsi70"),

@@ -191,6 +191,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap" style="height:300px;"><canvas id="ma200Chart"></canvas></div>
 </div>
 
+<!-- ══ RS CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNMidcap / VN30 — Relative Strength</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setRsRange(1)" id="rsBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setRsRange(2)" id="rsBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setRsRange(3)" id="rsBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="rsChart"></canvas></div>
+</div>
+
 <!-- ══ MFI ABS CHART ══ -->
 <div class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
@@ -560,6 +573,70 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     ma200Chart = makeChart(M2.dates.slice(start), M2.ma200_pct.slice(start), M2.vnindex.slice(start));
     ['1Y','2Y','3Y'].forEach(k => {
       const btn = document.getElementById('ma200Btn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const RS = {{rs_chart_json}};
+  if(!RS||!RS.dates) return;
+  const ctx = document.getElementById('rsChart').getContext('2d');
+
+  function ma20(arr) {
+    return arr.map((v, i) => {
+      if (v === null) return null;
+      const slice = arr.slice(Math.max(0, i - 19), i + 1).filter(x => x !== null);
+      return slice.length ? parseFloat((slice.reduce((a,b)=>a+b,0)/slice.length).toFixed(4)) : null;
+    });
+  }
+
+  function makeChart(dates, ratio) {
+    const ratioMa20 = ma20(ratio);
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'MIDCAP/VN30',    data:ratio,     borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.06)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   order:2},
+          {type:'line', label:'MA20',            data:ratioMa20, borderColor:'#FF671B', backgroundColor:'transparent',          fill:false, tension:0.3, pointRadius:0, borderWidth:1.5, order:1, hidden:true},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+c.parsed.y.toFixed(4);}}},
+          annotation: {}
+        },
+        scales:{
+          y:{position:'left',
+            title:{display:true, text:'MIDCAP / VN30', font:{family:'Manrope',size:11}},
+            grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'Manrope',size:11}, callback:v=>v.toFixed(3)},
+          },
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  const rsStart = Math.max(0, RS.dates.length - 3 * TDY);
+  let rsChart = makeChart(RS.dates.slice(rsStart), RS.ratio.slice(rsStart));
+
+  window.setRsRange = function(years) {
+    const start = Math.max(0, RS.dates.length - years * TDY);
+    rsChart.destroy();
+    rsChart = makeChart(RS.dates.slice(start), RS.ratio.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('rsBtn'+k);
       const active = k === years+'Y';
       btn.style.background = active ? '#173F35' : '#fff';
       btn.style.color = active ? '#fff' : '';
