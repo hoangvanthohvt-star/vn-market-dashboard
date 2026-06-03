@@ -191,19 +191,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap" style="height:300px;"><canvas id="ma200Chart"></canvas></div>
 </div>
 
-<!-- ══ RS CHART ══ -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">VNMidcap / VN30 — Relative Strength</h2>
-    <div style="display:flex;gap:6px;">
-      <button onclick="setRsRange(1)" id="rsBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
-      <button onclick="setRsRange(2)" id="rsBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setRsRange(3)" id="rsBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
-    </div>
-  </div>
-  <div class="chart-wrap" style="height:300px;"><canvas id="rsChart"></canvas></div>
-</div>
-
 <!-- ══ MFI ABS CHART ══ -->
 <div class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
@@ -215,6 +202,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     </div>
   </div>
   <div class="chart-wrap" style="height:300px;"><canvas id="mfiAbsChart"></canvas></div>
+</div>
+
+<!-- ══ RS CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNMidcap / VN30 — Relative Strength</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setRsRange(1)" id="rsBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setRsRange(2)" id="rsBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setRsRange(3)" id="rsBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="rsChart"></canvas></div>
 </div>
 
 <!-- ══ SEASONALITY CHART ══ -->
