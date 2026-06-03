@@ -551,7 +551,8 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   }
 
   const TDY = 250;
-  let ma200Chart = makeChart(M2.dates, M2.ma200_pct, M2.vnindex);
+  const m2Start = Math.max(0, M2.dates.length - 3 * TDY);
+  let ma200Chart = makeChart(M2.dates.slice(m2Start), M2.ma200_pct.slice(m2Start), M2.vnindex.slice(m2Start));
 
   window.setMa200Range = function(years) {
     const start = Math.max(0, M2.dates.length - years * TDY);
