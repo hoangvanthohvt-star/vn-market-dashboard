@@ -59,6 +59,7 @@ snap = {
     "mfi_chart":    regime["mfi_history"],
     "ad_chart":     regime["ad_history"],
     "gap_chart":    regime["gap_history"],
+    "ma200_chart":  regime["ma200_history"],
 }
 ```
 

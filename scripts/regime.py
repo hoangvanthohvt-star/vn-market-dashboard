@@ -55,6 +55,7 @@ def parse_doc(text):
                 "mfi_abs":     float(parts[8])  if len(parts) > 8  else None,
                 "ad_abs":      float(parts[9])  if len(parts) > 9  else None,
                 "nhnl_abs":    float(parts[10]) if len(parts) > 10 else None,
+                "ma200_pct":   float(parts[11].replace("%","")) if len(parts) > 11 else None,
             }
             rows.append(row)
         except (ValueError, IndexError):
@@ -552,6 +553,12 @@ def analyze(rows):
         "vnindex": [r["vnindex"]                          for r in rows],
     }
 
+    ma200_history = {
+        "dates":    [r["date"]               for r in rows],
+        "ma200_pct":[r.get("ma200_pct")      for r in rows],
+        "vnindex":  [r["vnindex"]            for r in rows],
+    }
+
     return {
         "date":            latest["date"],
         "vnindex":         latest["vnindex"],
@@ -562,6 +569,7 @@ def analyze(rows):
         "mfi_history":     mfi_history,
         "ad_history":      ad_history,
         "gap_history":     gap_history,
+        "ma200_history":   ma200_history,
         "indicators": {
             "rsi21":       latest["rsi21"],
             "rsi70":       latest.get("rsi70"),
