@@ -142,7 +142,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="header-top">
     <div>
       <h1>Market Regime</h1>
-      <div class="subtitle">2026 Jun 03 - 16:45</div>
+      <div class="subtitle">2026 Jun 03 - 16:47</div>
     </div>
   </div>
 </div>
@@ -573,7 +573,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
         labels: dates,
         datasets: [
           {type:'line', label:'% > MA200',      data:pct,     borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.06)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:3},
-          {type:'line', label:'MA20 (% > MA200)',data:pctMa20, borderColor:'#C08F4F', backgroundColor:'transparent',          fill:false, tension:0.3, pointRadius:0, borderWidth:1.5, yAxisID:'y',  order:2},
+          {type:'line', label:'MA20 (% > MA200)',data:pctMa20, borderColor:'#C08F4F', backgroundColor:'transparent',          fill:false, tension:0.3, pointRadius:0, borderWidth:1.5, yAxisID:'y',  order:2, hidden:true},
           {type:'line', label:'VNIndex (right)', data:vni,     borderColor:'#173F35', backgroundColor:'transparent',          fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1}
         ]
       },
