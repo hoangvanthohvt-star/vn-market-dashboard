@@ -49,12 +49,12 @@ def parse_doc(text):
                 "rsi21":       float(parts[2]),
                 "rsi70":       float(parts[3]),
                 "breadth_pct": float(breadth_raw),   # e.g. 40.9 means 40.9 %
-                "nhnl_rsi":    float(parts[5]),
-                "mfi_rsi":     float(parts[6]),
-                "ad_rsi":      float(parts[7]) if len(parts) > 7 else None,
-                "mfi_abs":     float(parts[8])  if len(parts) > 8  else None,
-                "ad_abs":      float(parts[9])  if len(parts) > 9  else None,
-                "nhnl_abs":    float(parts[10]) if len(parts) > 10 else None,
+                "nhnl_rsi":    float(parts[6]),
+                "mfi_rsi":     float(parts[7]),
+                "ad_rsi":      float(parts[8])  if len(parts) > 8  else None,
+                "mfi_abs":     float(parts[9])  if len(parts) > 9  else None,
+                "ad_abs":      float(parts[10]) if len(parts) > 10 else None,
+                "nhnl_abs":    float(parts[11]) if len(parts) > 11 else None,
             }
             rows.append(row)
         except (ValueError, IndexError):
