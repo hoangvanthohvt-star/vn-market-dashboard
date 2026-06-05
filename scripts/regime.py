@@ -58,6 +58,7 @@ def parse_doc(text):
                 "ma200_pct":   float(parts[11].replace("%","")) if len(parts) > 11 else None,
                 "vn30":        float(parts[12]) if len(parts) > 12 else None,
                 "vnmidcap":    float(parts[13]) if len(parts) > 13 else None,
+                "interbank_1m":float(parts[14].replace("%","")) if len(parts) > 14 else None,
             }
             rows.append(row)
         except (ValueError, IndexError):
@@ -570,6 +571,12 @@ def analyze(rows):
         "ratio": [_ratio(r)    for r in rows],
     }
 
+    interbank_history = {
+        "dates":        [r["date"]                  for r in rows],
+        "interbank_1m": [r.get("interbank_1m")      for r in rows],
+        "vnindex":      [r["vnindex"]               for r in rows],
+    }
+
     return {
         "date":            latest["date"],
         "vnindex":         latest["vnindex"],
@@ -581,7 +588,8 @@ def analyze(rows):
         "ad_history":      ad_history,
         "gap_history":     gap_history,
         "ma200_history":   ma200_history,
-        "rs_history":      rs_history,
+        "rs_history":         rs_history,
+        "interbank_history":  interbank_history,
         "indicators": {
             "rsi21":       latest["rsi21"],
             "rsi70":       latest.get("rsi70"),

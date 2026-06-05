@@ -840,6 +840,7 @@ def main():
         "{{breadth_chart_json}}":    json.dumps(snapshot.get("breadth_chart", {})),
         "{{ma200_chart_json}}":      json.dumps(snapshot.get("ma200_chart", {})),
         "{{rs_chart_json}}":         json.dumps(snapshot.get("rs_chart", {})),
+        "{{interbank_chart_json}}":  json.dumps(snapshot.get("interbank_chart", {})),
         "{{mfi_chart_json}}":        json.dumps(snapshot.get("mfi_chart", {})),
         "{{ad_chart_json}}":         json.dumps(snapshot.get("ad_chart", {})),
         "{{gap_chart_json}}":        json.dumps(snapshot.get("gap_chart", {})),

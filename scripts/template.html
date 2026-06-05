@@ -226,6 +226,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap" style="height:340px;"><canvas id="seasChart"></canvas></div>
 </div>
 
+<!-- ══ INTERBANK CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">1-Month Interbank Rate</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setInterbankRange(1)" id="interbankBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setInterbankRange(2)" id="interbankBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setInterbankRange(3)" id="interbankBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="interbankChart"></canvas></div>
+</div>
+
 <!-- ══ COMPOSITE MAN MASTERPLAN ══ -->
 <div class="section">
   <h2 style="margin:0 0 14px;">Composite Man Masterplan</h2>
@@ -946,6 +959,62 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
       }
     }
   });
+})();
+</script>
+
+<script>
+(function(){
+  const IB = {{interbank_chart_json}};
+  if(!IB||!IB.dates) return;
+  const ctx = document.getElementById('interbankChart').getContext('2d');
+
+  function makeChart(dates, rate, vni) {
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'1M Interbank Rate', data:rate, borderColor:'#014ABD', backgroundColor:'rgba(1,74,189,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
+          {type:'line', label:'VNIndex (right)',    data:vni,  borderColor:'#173F35', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.dataset.yAxisID==='y' ? c.parsed.y.toFixed(2)+'%' : c.parsed.y.toFixed(0));}}},
+          annotation: {}
+        },
+        scales:{
+          y:{position:'left',
+            title:{display:true, text:'Rate (%)', font:{family:'Manrope',size:11}},
+            grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'Manrope',size:11}, callback:v=>v.toFixed(2)+'%'},
+          },
+          y1:{position:'right', title:{display:true, text:'VNIndex', font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  const ibStart = Math.max(0, IB.dates.length - 3 * TDY);
+  let interbankChart = makeChart(IB.dates.slice(ibStart), IB.interbank_1m.slice(ibStart), IB.vnindex.slice(ibStart));
+
+  window.setInterbankRange = function(years) {
+    const start = Math.max(0, IB.dates.length - years * TDY);
+    interbankChart.destroy();
+    interbankChart = makeChart(IB.dates.slice(start), IB.interbank_1m.slice(start), IB.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('interbankBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
 })();
 </script>
 </body>
