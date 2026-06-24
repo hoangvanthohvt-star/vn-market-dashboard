@@ -56,9 +56,9 @@ def parse_doc(text):
                 "ad_abs":      float(parts[9])  if len(parts) > 9  else None,
                 "nhnl_abs":    float(parts[10]) if len(parts) > 10 else None,
                 "ma200_pct":   float(parts[11].replace("%","")) if len(parts) > 11 else None,
-                "vn30":        float(parts[12]) if len(parts) > 12 else None,
-                "vnmidcap":    float(parts[13]) if len(parts) > 13 else None,
-                "interbank_1m":float(parts[14].replace("%","")) if len(parts) > 14 else None,
+                "vn30":        float(parts[12]) if len(parts) > 12 and "%" not in parts[12] else None,
+                "vnmidcap":    float(parts[13]) if len(parts) > 13 and "%" not in parts[13] else None,
+                "interbank_1m":float(next((p for p in parts[12:] if "%" in p), "").replace("%","") or "nan") if any("%" in p for p in parts[12:]) else None,
             }
             rows.append(row)
         except (ValueError, IndexError):
