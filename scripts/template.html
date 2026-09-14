@@ -7,3 +7,974 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+:root {
+  --dc-dark:#173F35; --dc-green:#00BF6F; --dc-gold:#C08F4F;
+  --dc-gray:#97999B; --dc-black:#101820; --dc-white:#FFFFFF;
+  --dc-light:#F5F5F5; --dc-red:#FF0037; --dc-blue:#014ABD;
+  --dc-orange:#FF671B; --dc-border:#E8E8E8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Manrope',sans-serif;background:#f0f2f5;color:var(--dc-black);line-height:1.5;}
+.dashboard{max-width:1280px;margin:0 auto;padding:24px 20px 40px;}
+
+/* ── Header ── */
+.header{background:var(--dc-dark);color:white;border-radius:16px;padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:var(--dc-green);opacity:0.08;border-radius:50%;}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.header h1{font-size:32px;font-weight:800;letter-spacing:-0.5px;}
+.header .subtitle{color:rgba(255,255,255,0.6);font-size:13px;margin-top:4px;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.date-badge{background:rgba(255,255,255,0.12);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;}
+.vni-badge{font-size:28px;font-weight:800;letter-spacing:-1px;}
+.vni-chg{font-size:13px;font-weight:600;opacity:0.85;}
+.vni-chg.up{color:#4ade80;} .vni-chg.down{color:#f87171;}
+
+/* ── Executive Summary ── */
+.exec-box{background:white;border-radius:14px;padding:22px 26px;margin-bottom:20px;border-left:5px solid var(--dc-green);box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.exec-box h2{font-size:13px;font-weight:700;color:var(--dc-dark);margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;}
+.exec-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;}
+@media(max-width:720px){.exec-grid{grid-template-columns:1fr;}}
+.exec-item{display:flex;gap:8px;font-size:13px;align-items:baseline;}
+.exec-label{color:var(--dc-gray);font-weight:600;min-width:155px;flex-shrink:0;}
+.exec-val{font-weight:700;color:var(--dc-black);}
+.exec-val.warn{color:var(--dc-orange);}
+.exec-val.danger{color:var(--dc-red);}
+.exec-val.ok{color:var(--dc-green);}
+.warn-box{margin-top:14px;padding:12px 16px;background:rgba(255,103,27,0.07);border-radius:10px;font-size:13px;}
+.warn-box b{color:var(--dc-orange);}
+.warn-box ul{margin:6px 0 0 18px;color:var(--dc-black);}
+.warn-box li{margin-bottom:3px;}
+
+/* ── Metric Cards ── */
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.mc{background:white;border-radius:12px;padding:16px 18px;border-left:4px solid var(--dc-dark);box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.mc.pos{border-left-color:var(--dc-green);}
+.mc.neg{border-left-color:var(--dc-red);}
+.mc.warn{border-left-color:var(--dc-orange);}
+.mc.neu{border-left-color:var(--dc-gray);}
+.mc-label{font-size:11px;color:var(--dc-gray);text-transform:uppercase;letter-spacing:0.5px;}
+.mc-value{font-size:26px;font-weight:800;color:var(--dc-dark);margin:2px 0;}
+.mc.pos .mc-value{color:var(--dc-green);}
+.mc.neg .mc-value{color:var(--dc-red);}
+.mc.warn .mc-value{color:var(--dc-orange);}
+.mc.neu .mc-value{color:var(--dc-gray);}
+.mc-sub{font-size:11px;color:var(--dc-gray);}
+
+/* ── Sections ── */
+.section{background:white;border-radius:14px;padding:22px 26px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.section h2{font-size:13px;font-weight:700;color:var(--dc-dark);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--dc-light);text-transform:uppercase;letter-spacing:0.8px;}
+
+/* ── Chart ── */
+.chart-wrap{position:relative;height:340px;}
+
+/* ── Divergence Checklist ── */
+.div-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:900px){.div-grid{grid-template-columns:1fr;}}
+.div-card{background:var(--dc-light);border-radius:10px;padding:14px 16px;}
+.div-card h3{font-size:12px;font-weight:700;color:var(--dc-dark);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+.div-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(0,0,0,0.05);}
+.div-row:last-of-type{border-bottom:none;}
+.div-row .ind{color:var(--dc-gray);}
+.div-row .val{font-weight:700;}
+.div-row .val.up{color:var(--dc-green);}
+.div-row .val.down{color:var(--dc-red);}
+.div-row .val.flat{color:var(--dc-gray);}
+.div-row .val.bold{color:var(--dc-black);}
+.div-verdict{margin-top:10px;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:700;text-align:center;}
+.div-verdict.aligned{background:rgba(0,191,111,0.12);color:#0a7a4a;}
+.div-verdict.divergent{background:rgba(255,0,55,0.1);color:var(--dc-red);}
+.div-verdict.warning{background:rgba(255,103,27,0.12);color:var(--dc-orange);}
+
+/* ── Scenario Cards ── */
+.scenario-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+.scenario{background:white;border-radius:12px;border:1px solid var(--dc-border);padding:18px;position:relative;overflow:hidden;}
+.scenario::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
+.scenario.s1::before{background:var(--dc-green);}
+.scenario.s2::before{background:var(--dc-orange);}
+.scenario.s3::before{background:var(--dc-red);}
+.scenario h3{font-size:14px;font-weight:700;color:var(--dc-dark);margin-bottom:4px;}
+.scenario .prob{font-size:30px;font-weight:800;margin:6px 0;}
+.scenario.s1 .prob{color:var(--dc-green);}
+.scenario.s2 .prob{color:var(--dc-orange);}
+.scenario.s3 .prob{color:var(--dc-red);}
+.prob-bar{height:5px;background:#eee;border-radius:3px;margin:8px 0 12px;overflow:hidden;}
+.prob-fill{height:100%;border-radius:3px;}
+.scenario.s1 .prob-fill{background:var(--dc-green);}
+.scenario.s2 .prob-fill{background:var(--dc-orange);}
+.scenario.s3 .prob-fill{background:var(--dc-red);}
+.sc-detail{font-size:12px;color:var(--dc-gray);margin-bottom:5px;}
+.sc-detail b{color:var(--dc-black);}
+.sc-alloc{display:inline-block;background:var(--dc-light);padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;color:var(--dc-dark);margin-top:8px;}
+
+/* ── Phase Table ── */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--dc-dark);color:white;padding:9px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;}
+td{padding:8px 12px;border-bottom:1px solid #eee;}
+tbody tr:nth-child(even){background:var(--dc-light);}
+tbody tr:hover{background:rgba(0,191,111,0.05);}
+.tr{text-align:right;} .tc{text-align:center;}
+.fw{font-weight:700;} .pos-t{color:var(--dc-green);font-weight:600;} .neg-t{color:var(--dc-red);font-weight:600;} .warn-t{color:var(--dc-orange);font-weight:600;}
+.ticker-link{color:var(--dc-dark);font-weight:700;}
+
+/* ── Sentiment pill ── */
+.s-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.s-pill.bullish{background:rgba(0,191,111,0.12);color:#0a7a4a;}
+.s-pill.bearish{background:rgba(255,0,55,0.1);color:var(--dc-red);}
+.s-pill.neutral,.s-pill.mixed{background:#eee;color:var(--dc-gray);}
+
+/* ── Overview grid ── */
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+.ov-card{background:white;border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.ov-label{font-size:11px;color:#111;text-transform:uppercase;letter-spacing:0.4px;font-weight:700;}
+.ov-value{font-size:22px;font-weight:800;margin:3px 0;}
+.ov-meta{font-size:11px;color:var(--dc-gray);}
+
+/* ── Footer ── */
+.footer{text-align:center;padding:16px 0 0;color:var(--dc-gray);font-size:12px;}
+.footer a{color:var(--dc-dark);font-weight:700;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="dashboard">
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Market Regime</h1>
+      <div class="subtitle">{{generated_at}}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ METRIC CARDS (top) ══ -->
+<div class="metric-row">
+  {{regime_metric_cards}}
+</div>
+
+<!-- ══ NHNL CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs New High–New Low (15d Rolling · VNI Universe)</h2>
+    <div id="nhnlRangebtns" style="display:flex;gap:6px;">
+      <button onclick="setNhnlRange(1)" id="nhnlBtn1Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setNhnlRange(2)" id="nhnlBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setNhnlRange(3)" id="nhnlBtn3Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:320px;"><canvas id="nhnlChart"></canvas></div>
+</div>
+
+<!-- ══ BREADTH CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Breadth — % of VNI Stocks Above MA50</h2>
+    <div id="breadthRangebtns" style="display:flex;gap:6px;">
+      <button onclick="setBreadthRange(1)" id="breadthBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setBreadthRange(2)" id="breadthBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setBreadthRange(3)" id="breadthBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="breadthChart"></canvas></div>
+</div>
+
+<!-- ══ MA200 BREADTH CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs % of VNI Stocks Above MA200</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setMa200Range(1)" id="ma200Btn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setMa200Range(2)" id="ma200Btn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setMa200Range(3)" id="ma200Btn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="ma200Chart"></canvas></div>
+</div>
+
+<!-- ══ MFI ABS CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Money Flow Index (Absolute)</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setMfiAbsRange(1)" id="mfiAbsBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setMfiAbsRange(2)" id="mfiAbsBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setMfiAbsRange(3)" id="mfiAbsBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="mfiAbsChart"></canvas></div>
+</div>
+
+<!-- ══ RS CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNMidcap / VN30 — Relative Strength</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setRsRange(1)" id="rsBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setRsRange(2)" id="rsBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setRsRange(3)" id="rsBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="rsChart"></canvas></div>
+</div>
+
+<!-- ══ SEASONALITY CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
+    <h2 style="margin:0;">VNIndex Seasonality — Historical Avg vs 2026 YTD (Cumulative Return %)</h2>
+    <span style="font-size:11px;color:#97999B;font-weight:600;">10-year avg · trading day of year</span>
+  </div>
+  <div class="chart-wrap" style="height:340px;"><canvas id="seasChart"></canvas></div>
+</div>
+
+<!-- ══ INTERBANK CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">1-Month Interbank Rate</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setInterbankRange(1)" id="interbankBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setInterbankRange(2)" id="interbankBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setInterbankRange(3)" id="interbankBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="interbankChart"></canvas></div>
+</div>
+
+
+<!-- ══ INDICATOR METRIC CARDS ══ -->
+<div class="metric-row">
+  {{regime_metric_cards}}
+</div>
+
+
+
+
+<!-- ══ RSI GAP CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">RSI 21D − NHNL RSI vs VNIndex · Danger zones: &gt;+30 · &lt;−20</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setGapRange(1)" id="gapBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setGapRange(2)" id="gapBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setGapRange(3)" id="gapBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="gapChart"></canvas></div>
+</div>
+
+<!-- ══ MAIN CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">Price &amp; Indicator Chart</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setMainRange(1)" id="mainBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setMainRange(2)" id="mainBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setMainRange(3)" id="mainBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+</div>
+
+<!-- ══ MFI CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
+</div>
+
+<div class="footer">
+  <a href="https://hoangvanthohvt-star.github.io/vn-market-dashboard/">VN Market Daily</a> ·
+  data from MSSQL + Google Drive ·
+  <a href="data/latest.json">latest.json</a>
+</div>
+
+</div><!-- end dashboard -->
+
+<script>
+(function(){
+  const D = {{full_chart_json}};
+  if(!D||!D.dates) return;
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  const TDY = 250;
+
+  function makeMainChart(dates, d) {
+    return new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: dates,
+        datasets:[
+          {label:'VNIndex (right)', data:d.vnindex, borderColor:'#173F35', backgroundColor:'rgba(23,63,53,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1'},
+          {label:'RSI 21D',         data:d.rsi21,   borderColor:'#00BF6F', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y'},
+          {label:'Breadth %>MA50',  data:d.breadth, borderColor:'#C08F4F', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y', hidden:true},
+          {label:'NHNL RSI',        data:d.nhnl,    borderColor:'#FF0037', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y'},
+          {label:'MFI RSI',         data:d.mfi,     borderColor:'#014ABD', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:1.5, yAxisID:'y', hidden:true},
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'}}
+        },
+        scales:{
+          y: {position:'left',  title:{display:true,text:'RSI / Breadth / NHNL',font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
+          y1:{position:'right', title:{display:true,text:'VNIndex',font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  function sliceD(start) {
+    return {
+      vnindex: D.vnindex.slice(start), rsi21: D.rsi21.slice(start),
+      breadth: D.breadth.slice(start), nhnl:   D.nhnl.slice(start),
+      mfi:     D.mfi.slice(start),
+    };
+  }
+
+  let mainChart = makeMainChart(D.dates, sliceD(0));
+
+  window.setMainRange = function(years) {
+    const start = Math.max(0, D.dates.length - years * TDY);
+    mainChart.destroy();
+    mainChart = makeMainChart(D.dates.slice(start), sliceD(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('mainBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color      = active ? '#fff'    : '';
+      btn.style.border     = active ? '1px solid #173F35' : '1px solid #ccc';
+    });
+  };
+  setMainRange(3);
+})();
+</script>
+
+<script>
+(function(){
+  const N = {{nhnl_chart_json}};
+  if(!N||!N.dates) return;
+  const ctx = document.getElementById('nhnlChart').getContext('2d');
+
+  function calcMA(arr, period) {
+    return arr.map((_, i) => {
+      if (i < period - 1) return null;
+      const slice = arr.slice(i - period + 1, i + 1).filter(v => v != null);
+      return slice.length ? slice.reduce((a, b) => a + b, 0) / slice.length : null;
+    });
+  }
+
+  function makeChart(dates, nhnl, vni) {
+    const colors = nhnl.map(v => v >= 0 ? 'rgba(0,191,111,0.75)' : 'rgba(255,0,55,0.75)');
+    const ma10 = calcMA(nhnl, 10);
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'bar',  label:'NHNL RSI',       data:nhnl, backgroundColor:colors, borderWidth:0, yAxisID:'y', order:2},
+          {type:'line', label:'NHNL MA10',       data:ma10, borderColor:'#FF671B', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3, yAxisID:'y', order:1, hidden:true},
+          {type:'line', label:'VNIndex (right)', data:vni,  borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:0}
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'}}
+        },
+        scales:{
+          y:{position:'left', title:{display:true, text:'NHNL', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
+          y1:{position:'right', title:{display:true, text:'VNIndex', font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  // Approximate trading days per year
+  const TDY = 250;
+  const start1Y = Math.max(0, N.dates.length - TDY);
+  let nhnlChart = makeChart(N.dates.slice(start1Y), N.nhnl.slice(start1Y), N.vnindex.slice(start1Y));
+
+  window.setNhnlRange = function(years) {
+    const n = years * TDY;
+    const start = Math.max(0, N.dates.length - n);
+    const dates = N.dates.slice(start);
+    const nhnl  = N.nhnl.slice(start);
+    const vni   = N.vnindex.slice(start);
+    nhnlChart.destroy();
+    nhnlChart = makeChart(dates, nhnl, vni);
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('nhnlBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const B = {{breadth_chart_json}};
+  if(!B||!B.dates) return;
+  const ctx = document.getElementById('breadthChart').getContext('2d');
+
+  function makeChart(dates, breadth, vni) {
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'Breadth % > MA50', data:breadth, borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.06)', fill:true, tension:0.3, pointRadius:0, borderWidth:2, yAxisID:'y', order:2},
+          {type:'line', label:'VNIndex (right)',   data:vni,    borderColor:'#173F35', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', order:1}
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.dataset.yAxisID==='y' ? c.parsed.y.toFixed(1)+'%' : c.parsed.y.toFixed(0));}}},
+          annotation: {}
+        },
+        scales:{
+          y:{position:'left', min:0, max:100,
+            title:{display:true, text:'% > MA50', font:{family:'Manrope',size:11}},
+            grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'Manrope',size:11}, callback:v=>v+'%'},
+            afterDataLimits(axis){ axis.max = 100; },
+          },
+          y1:{position:'right', title:{display:true, text:'VNIndex', font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  let breadthChart = makeChart(B.dates, B.breadth_pct, B.vnindex);
+
+  window.setBreadthRange = function(years) {
+    const start = Math.max(0, B.dates.length - years * TDY);
+    breadthChart.destroy();
+    breadthChart = makeChart(B.dates.slice(start), B.breadth_pct.slice(start), B.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('breadthBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const M2 = {{ma200_chart_json}};
+  if(!M2||!M2.dates) return;
+  const ctx = document.getElementById('ma200Chart').getContext('2d');
+
+  function ma20(arr) {
+    return arr.map((v, i) => {
+      if (v === null) return null;
+      const slice = arr.slice(Math.max(0, i - 19), i + 1).filter(x => x !== null);
+      return slice.length ? slice.reduce((a,b) => a+b, 0) / slice.length : null;
+    });
+  }
+
+  function makeChart(dates, pct, vni) {
+    const pctMa20 = ma20(pct);
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'% > MA200',      data:pct,     borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.06)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:3},
+          {type:'line', label:'MA20 (% > MA200)',data:pctMa20, borderColor:'#C08F4F', backgroundColor:'transparent',          fill:false, tension:0.3, pointRadius:0, borderWidth:1.5, yAxisID:'y',  order:2, hidden:true},
+          {type:'line', label:'VNIndex (right)', data:vni,     borderColor:'#173F35', backgroundColor:'transparent',          fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1}
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.dataset.yAxisID==='y' ? c.parsed.y.toFixed(1)+'%' : c.parsed.y.toFixed(0));}}},
+          annotation: {}
+        },
+        scales:{
+          y:{position:'left', min:0, max:100,
+            title:{display:true, text:'% > MA200', font:{family:'Manrope',size:11}},
+            grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'Manrope',size:11}, callback:v=>v+'%'},
+            afterDataLimits(axis){ axis.max = 100; },
+          },
+          y1:{position:'right', title:{display:true, text:'VNIndex', font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  const m2Start = Math.max(0, M2.dates.length - 3 * TDY);
+  let ma200Chart = makeChart(M2.dates.slice(m2Start), M2.ma200_pct.slice(m2Start), M2.vnindex.slice(m2Start));
+
+  window.setMa200Range = function(years) {
+    const start = Math.max(0, M2.dates.length - years * TDY);
+    ma200Chart.destroy();
+    ma200Chart = makeChart(M2.dates.slice(start), M2.ma200_pct.slice(start), M2.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('ma200Btn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const RS = {{rs_chart_json}};
+  if(!RS||!RS.dates) return;
+  const ctx = document.getElementById('rsChart').getContext('2d');
+
+  function ma20(arr) {
+    return arr.map((v, i) => {
+      if (v === null) return null;
+      const slice = arr.slice(Math.max(0, i - 19), i + 1).filter(x => x !== null);
+      return slice.length ? parseFloat((slice.reduce((a,b)=>a+b,0)/slice.length).toFixed(4)) : null;
+    });
+  }
+
+  function makeChart(dates, ratio) {
+    const ratioMa20 = ma20(ratio);
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'MIDCAP/VN30',    data:ratio,     borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.06)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   order:2},
+          {type:'line', label:'MA20',            data:ratioMa20, borderColor:'#FF671B', backgroundColor:'transparent',          fill:false, tension:0.3, pointRadius:0, borderWidth:1.5, order:1, hidden:true},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+c.parsed.y.toFixed(4);}}},
+          annotation: {}
+        },
+        scales:{
+          y:{position:'left',
+            title:{display:true, text:'MIDCAP / VN30', font:{family:'Manrope',size:11}},
+            grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'Manrope',size:11}, callback:v=>v.toFixed(3)},
+          },
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  const rsStart = Math.max(0, RS.dates.length - 3 * TDY);
+  let rsChart = makeChart(RS.dates.slice(rsStart), RS.ratio.slice(rsStart));
+
+  window.setRsRange = function(years) {
+    const start = Math.max(0, RS.dates.length - years * TDY);
+    rsChart.destroy();
+    rsChart = makeChart(RS.dates.slice(start), RS.ratio.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('rsBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const G = {{gap_chart_json}};
+  if(!G||!G.dates) return;
+  const ctx = document.getElementById('gapChart').getContext('2d');
+
+  const zonePlugin = {
+    id:'gapZones',
+    beforeDraw(chart) {
+      const {ctx:c, chartArea, scales} = chart;
+      if(!chartArea) return;
+      const y = scales.y;
+      const yTop = chartArea.top;
+      const yBot = chartArea.bottom;
+      c.save();
+      // orange zone: > +30 (top)
+      const y30top = Math.max(y.getPixelForValue(30), yTop);
+      c.fillStyle = 'rgba(255,103,27,0.13)';
+      c.fillRect(chartArea.left, yTop, chartArea.width, y30top - yTop);
+      // orange zone: < -20 (bottom)
+      const y20 = Math.min(y.getPixelForValue(-20), yBot);
+      c.fillStyle = 'rgba(255,103,27,0.13)';
+      c.fillRect(chartArea.left, y20, chartArea.width, yBot - y20);
+      c.restore();
+    }
+  };
+
+  function makeChart(dates, gap, vni) {
+    return new Chart(ctx, {
+      plugins: [zonePlugin],
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'RSI21 − NHNL RSI', data:gap, borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
+          {type:'line', label:'VNIndex (right)',   data:vni, borderColor:'#173F35', backgroundColor:'transparent', fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
+          // threshold reference lines
+          {type:'line', label:'+30 (danger)',  data:Array(dates.length).fill(30),  borderColor:'rgba(255,103,27,0.7)', backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:'y', order:3},
+          {type:'line', label:'−20 (danger)',  data:Array(dates.length).fill(-20), borderColor:'rgba(255,103,27,0.7)', backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:'y', order:3},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11},
+            filter: item => !['+30 (danger)','−20 (danger)'].includes(item.text)}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){
+              if(['+30 (danger)','−20 (danger)'].includes(c.dataset.label)) return null;
+              return c.dataset.label+': '+(c.parsed.y!=null?c.parsed.y.toFixed(1):'—');
+            }}}
+        },
+        scales:{
+          y: {position:'left',  title:{display:true, text:'RSI21 − NHNL RSI', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
+          y1:{position:'right', title:{display:true, text:'VNIndex',           font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false},     ticks:{font:{family:'Manrope',size:11}}},
+          x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  let gapChart = makeChart(G.dates, G.gap, G.vnindex);
+
+  window.setGapRange = function(years) {
+    const start = Math.max(0, G.dates.length - years * TDY);
+    gapChart.destroy();
+    gapChart = makeChart(G.dates.slice(start), G.gap.slice(start), G.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('gapBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background  = active ? '#173F35' : '#fff';
+      btn.style.color       = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const AD = {{ad_chart_json}};
+  if(!AD||!AD.dates) return;
+  const ctx = document.getElementById('adChart').getContext('2d');
+
+  function makeChart(dates, ad, vni) {
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'A/D Line (abs)',   data:ad,  borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
+          {type:'line', label:'VNIndex (right)',  data:vni, borderColor:'#173F35', backgroundColor:'transparent',          fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.parsed.y!=null?c.parsed.y.toFixed(1):'—');}}}
+        },
+        scales:{
+          y: {position:'left',  title:{display:true, text:'A/D (abs)', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
+          y1:{position:'right', title:{display:true, text:'VNIndex',   font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false},     ticks:{font:{family:'Manrope',size:11}}},
+          x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  let adChart = makeChart(AD.dates, AD.ad_abs, AD.vnindex);
+
+  window.setAdRange = function(years) {
+    const start = Math.max(0, AD.dates.length - years * TDY);
+    adChart.destroy();
+    adChart = makeChart(AD.dates.slice(start), AD.ad_abs.slice(start), AD.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('adBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background  = active ? '#173F35' : '#fff';
+      btn.style.color       = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const MFI = {{mfi_chart_json}};
+  if(!MFI||!MFI.dates) return;
+  const ctx = document.getElementById('mfiAbsChart').getContext('2d');
+
+  function makeChart(dates, mfi, vni) {
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'MFI (abs)',        data:mfi, borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
+          {type:'line', label:'VNIndex (right)',   data:vni, borderColor:'#173F35', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.parsed.y!=null?c.parsed.y.toFixed(1):'—');}}}
+        },
+        scales:{
+          y: {position:'left',  title:{display:true, text:'MFI (abs)', font:{family:'Manrope',size:11}}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}},
+          y1:{position:'right', title:{display:true, text:'VNIndex',   font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false},     ticks:{font:{family:'Manrope',size:11}}},
+          x: {ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  let mfiAbsChart = makeChart(MFI.dates, MFI.mfi_abs, MFI.vnindex);
+
+  window.setMfiAbsRange = function(years) {
+    const start = Math.max(0, MFI.dates.length - years * TDY);
+    mfiAbsChart.destroy();
+    mfiAbsChart = makeChart(MFI.dates.slice(start), MFI.mfi_abs.slice(start), MFI.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('mfiAbsBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background  = active ? '#173F35' : '#fff';
+      btn.style.color       = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  // Hardcoded seasonality data (source: vnindex_seasonality_data.csv, 10Y avg, tdoy 2-250)
+  const CUM_TYPICAL = [
+    0.179,0.5499,0.8086,0.9216,1.2155,1.5353,1.632,1.6049,1.6591,2.0124,
+    1.2403,1.751,2.6099,2.4709,2.5767,1.9774,1.6387,1.2359,1.8849,1.5209,
+    1.876,1.8936,2.2853,1.9144,1.526,2.6002,2.9898,3.048,4.2174,4.6174,
+    4.7679,4.3182,4.6049,4.2788,4.6645,4.5828,4.6871,4.6995,4.4038,4.6847,
+    4.6352,4.2341,4.1445,3.7774,3.2994,3.6377,3.1797,3.3158,3.1306,2.8739,
+    2.6158,2.3427,2.1707,2.7974,3.1335,3.338,2.8542,3.4855,4.1848,3.8876,
+    4.162,3.5206,3.0641,3.5659,4.4292,4.3753,4.1822,3.6688,2.8813,2.9354,
+    2.4488,1.1465,1.3179,1.0221,1.3477,1.1772,1.3628,1.3089,1.1656,1.2161,
+    1.6285,2.2067,2.7207,2.3975,2.4316,2.8458,3.3441,3.2423,3.5497,4.0152,
+    3.8041,3.7269,4.1324,4.1651,3.9833,4.086,4.1613,4.1744,4.5476,5.0904,
+    5.6336,5.8469,5.7849,6.0549,5.7629,5.5212,5.186,5.4322,4.9184,4.8992,
+    4.5369,4.2525,4.7311,4.9044,4.9685,5.2868,5.1614,5.286,4.6979,4.7669,
+    5.0369,4.6299,4.3249,4.7166,5.0783,5.0436,5.0856,4.8679,4.8287,5.0962,
+    5.087,4.8296,5.4991,5.4335,5.4402,4.8713,5.2421,5.2572,4.5759,5.2569,
+    5.6289,6.1934,6.3223,6.7217,6.8257,7.2436,7.6304,7.3996,7.4238,7.5679,
+    8.195,8.3609,8.1872,8.3981,8.1724,8.1782,7.8076,7.6904,8.6945,8.5101,
+    8.906,9.194,9.4306,9.8348,9.8707,9.2682,9.0965,9.0404,9.055,9.2134,
+    9.5126,9.6075,9.5109,9.4289,9.5343,9.4061,9.4627,9.4437,8.8866,8.6233,
+    8.745,8.549,8.7791,8.1277,7.4332,8.3788,7.8471,7.7244,8.0391,8.105,
+    8.6994,9.0074,8.6122,8.8054,8.3995,7.8237,7.9047,7.5212,6.9375,6.942,
+    6.6662,7.0477,6.9803,6.7497,6.0207,5.8726,7.0388,6.7082,6.9942,7.04,
+    7.188,6.9103,7.2832,7.0912,7.0473,7.4823,7.8261,7.2376,7.2265,7.6312,
+    8.138,8.2301,8.987,9.3333,9.8633,10.2016,10.5049,10.8948,11.0861,10.8966,
+    11.4831,11.502,11.5023,11.0684,10.778,10.7426,11.1551,11.309,10.7444,10.998,
+    10.9052,11.2946,11.3139,10.9426,11.3779,11.5184,11.7603,12.1696,12.2812
+  ];
+
+  // 2026 YTD data — injected from Google Drive via render.py (auto-updates daily)
+  const _S = {{seasonality_2026_json}};
+  const DATES_2026   = _S.dates;
+  const CUM_2026_RAW = _S.cum_returns;
+
+  const n = CUM_TYPICAL.length; // 249
+  const known = CUM_2026_RAW.length; // 92
+
+  // Build full-length arrays
+  const cum2026 = CUM_2026_RAW.concat(new Array(n - known).fill(null));
+
+  // Approximate month start tdoy for future days (after tdoy 93 = May 25)
+  const MONTH_LABELS = {98:'Jun',119:'Jul',140:'Aug',161:'Sep',182:'Oct',202:'Nov',222:'Dec'};
+  const futureLabels = Array.from({length: n - known}, (_, i) => {
+    const tdoy = known + 2 + i;
+    return MONTH_LABELS[tdoy] || '';
+  });
+  const labels = DATES_2026.concat(futureLabels);
+
+  const ctx = document.getElementById('seasChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Historical Avg (10Y)',
+          data: CUM_TYPICAL,
+          borderColor: '#173F35',
+          backgroundColor: 'transparent',
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0,
+          borderWidth: 2.5,
+          order: 2
+        },
+        {
+          label: '2026 YTD',
+          data: cum2026,
+          borderColor: '#00BF6F',
+          backgroundColor: 'rgba(0,191,111,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          borderWidth: 2.5,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {mode: 'index', intersect: false},
+      plugins: {
+        legend: {position: 'top', labels: {usePointStyle: true, padding: 14, font: {family: 'Manrope', size: 11}}},
+        tooltip: {
+          backgroundColor: '#173F35',
+          titleFont: {family: 'Manrope'},
+          bodyFont: {family: 'Manrope'},
+          callbacks: {
+            label: c => c.dataset.label + ': ' + (c.parsed.y != null ? (c.parsed.y >= 0 ? '+' : '') + c.parsed.y.toFixed(2) + '%' : '—')
+          }
+        }
+      },
+      scales: {
+        y: {
+          title: {display: true, text: 'Cumulative Return %', font: {family: 'Manrope', size: 11}},
+          grid: {color: 'rgba(0,0,0,0.04)'},
+          ticks: {font: {family: 'Manrope', size: 11}, callback: v => (v >= 0 ? '+' : '') + v + '%'}
+        },
+        x: {
+          ticks: {
+            font: {family: 'Manrope', size: 10},
+            maxRotation: 45,
+            autoSkip: false,
+            callback: function(val, index) {
+              const lbl = this.getLabelForValue(val);
+              if (!lbl) return null;
+              // Real dates: show only the 1st of each month (yyyy-mm-01) or the first label
+              if (lbl.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return (lbl.slice(8) === '01' || index === 0) ? lbl.slice(0, 7) : null;
+              }
+              return lbl; // month name
+            }
+          },
+          grid: {display: false}
+        }
+      }
+    }
+  });
+})();
+</script>
+
+<script>
+(function(){
+  const IB = {{interbank_chart_json}};
+  if(!IB||!IB.dates) return;
+  const ctx = document.getElementById('interbankChart').getContext('2d');
+
+  function ma3(arr) {
+    return arr.map((v, i) => {
+      const slice = arr.slice(Math.max(0, i - 2), i + 1).filter(x => x !== null);
+      return slice.length ? parseFloat((slice.reduce((a,b)=>a+b,0)/slice.length).toFixed(4)) : null;
+    });
+  }
+
+  function makeChart(dates, rate, vni) {
+    const smoothed = ma3(rate);
+    return new Chart(ctx, {
+      data: {
+        labels: dates,
+        datasets: [
+          {type:'line', label:'1M Interbank Rate (3d avg)', data:smoothed, borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
+          {type:'line', label:'VNIndex (right)',    data:vni,  borderColor:'#173F35', backgroundColor:'transparent',         fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            callbacks:{label:function(c){return c.dataset.label+': '+(c.dataset.yAxisID==='y' ? c.parsed.y.toFixed(2)+'%' : c.parsed.y.toFixed(0));}}},
+          annotation: {}
+        },
+        scales:{
+          y:{position:'left',
+            title:{display:true, text:'Rate (%)', font:{family:'Manrope',size:11}},
+            grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'Manrope',size:11}, callback:v=>v.toFixed(2)+'%'},
+          },
+          y1:{position:'right', title:{display:true, text:'VNIndex', font:{family:'Manrope',size:11}}, grid:{drawOnChartArea:false}, ticks:{font:{family:'Manrope',size:11}}},
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  const TDY = 250;
+  const ibStart = Math.max(0, IB.dates.length - 3 * TDY);
+  let interbankChart = makeChart(IB.dates.slice(ibStart), IB.interbank_1m.slice(ibStart), IB.vnindex.slice(ibStart));
+
+  window.setInterbankRange = function(years) {
+    const start = Math.max(0, IB.dates.length - years * TDY);
+    interbankChart.destroy();
+    interbankChart = makeChart(IB.dates.slice(start), IB.interbank_1m.slice(start), IB.vnindex.slice(start));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('interbankBtn'+k);
+      const active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+</body>
+</html>
