@@ -142,7 +142,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="header-top">
     <div>
       <h1>Market Regime</h1>
-      <div class="subtitle">2026 Nov 11 - 15:22</div>
+      <div class="subtitle">2026 Nov 11 - 15:40</div>
     </div>
   </div>
 </div>
@@ -155,7 +155,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 <div class='mc warn'><div class='mc-label'>MFI RSI</div><div class='mc-value'>54.0</div><div class='mc-sub'>Above Average</div></div>
 <div class='mc warn'><div class='mc-label'>A/D RSI</div><div class='mc-value'>50.4</div><div class='mc-sub'>Above Average</div></div>
 <div class='mc neu'><div class='mc-label'>Gap Divergence</div><div class='mc-value'>-4.2</div><div class='mc-sub'>Aligned</div></div>
-<div class='mc neu'><div class='mc-label'>Allocation</div><div class='mc-value'>50%</div><div class='mc-sub'>recommended</div></div>
 </div>
 
 <!-- ══ NHNL CHART ══ -->
@@ -210,19 +209,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="chart-wrap" style="height:300px;"><canvas id="mfiAbsChart"></canvas></div>
 </div>
 
-<!-- ══ AD CHART ══ -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
-    <div style="display:flex;gap:6px;">
-      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
-      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
-    </div>
-  </div>
-  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
-</div>
-
 <!-- ══ RS CHART ══ -->
 <div class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
@@ -259,19 +245,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 </div>
 
 
-<!-- ══ INDICATOR METRIC CARDS ══ -->
-<div class="metric-row">
-  <div class='mc neg'><div class='mc-label'>RSI 21D</div><div class='mc-value'>49.1</div><div class='mc-sub'>Mild Sideways Down</div></div>
-<div class='mc warn'><div class='mc-label'>Breadth % &gt; MA50</div><div class='mc-value'>44.3%</div><div class='mc-sub'>Below Average (44.3%)</div></div>
-<div class='mc pos'><div class='mc-label'>NHNL RSI</div><div class='mc-value'>64.4</div><div class='mc-sub'>Strong</div></div>
-<div class='mc warn'><div class='mc-label'>MFI RSI</div><div class='mc-value'>54.0</div><div class='mc-sub'>Above Average</div></div>
-<div class='mc warn'><div class='mc-label'>A/D RSI</div><div class='mc-value'>50.4</div><div class='mc-sub'>Above Average</div></div>
-<div class='mc neu'><div class='mc-label'>Gap Divergence</div><div class='mc-value'>-4.2</div><div class='mc-sub'>Aligned</div></div>
-<div class='mc neu'><div class='mc-label'>Allocation</div><div class='mc-value'>50%</div><div class='mc-sub'>recommended</div></div>
-</div>
-
-
-
 
 <!-- ══ RSI GAP CHART ══ -->
 <div class="section">
@@ -297,6 +270,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     </div>
   </div>
   <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+</div>
+
+<!-- ══ MFI CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
 </div>
 
 <div class="footer">
@@ -411,6 +397,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     });
   }
 
+  // Approximate trading days per year
   const TDY = 250;
   const start1Y = Math.max(0, N.dates.length - TDY);
   let nhnlChart = makeChart(N.dates.slice(start1Y), N.nhnl.slice(start1Y), N.vnindex.slice(start1Y));
@@ -636,9 +623,11 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
       const yTop = chartArea.top;
       const yBot = chartArea.bottom;
       c.save();
+      // orange zone: > +30 (top)
       const y30top = Math.max(y.getPixelForValue(30), yTop);
       c.fillStyle = 'rgba(255,103,27,0.13)';
       c.fillRect(chartArea.left, yTop, chartArea.width, y30top - yTop);
+      // orange zone: < -20 (bottom)
       const y20 = Math.min(y.getPixelForValue(-20), yBot);
       c.fillStyle = 'rgba(255,103,27,0.13)';
       c.fillRect(chartArea.left, y20, chartArea.width, yBot - y20);
@@ -654,6 +643,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
         datasets: [
           {type:'line', label:'RSI21 − NHNL RSI', data:gap, borderColor:'#00BF6F', backgroundColor:'rgba(0,191,111,0.07)', fill:true,  tension:0.3, pointRadius:0, borderWidth:2,   yAxisID:'y',  order:2},
           {type:'line', label:'VNIndex (right)',   data:vni, borderColor:'#173F35', backgroundColor:'transparent', fill:false, tension:0.3, pointRadius:0, borderWidth:2.5, yAxisID:'y1', order:1},
+          // threshold reference lines
           {type:'line', label:'+30 (danger)',  data:Array(dates.length).fill(30),  borderColor:'rgba(255,103,27,0.7)', backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:'y', order:3},
           {type:'line', label:'−20 (danger)',  data:Array(dates.length).fill(-20), borderColor:'rgba(255,103,27,0.7)', backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:'y', order:3},
         ]
@@ -799,6 +789,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 
 <script>
 (function(){
+  // Hardcoded seasonality data (source: vnindex_seasonality_data.csv, 10Y avg, tdoy 2-250)
   const CUM_TYPICAL = [
     0.179,0.5499,0.8086,0.9216,1.2155,1.5353,1.632,1.6049,1.6591,2.0124,
     1.2403,1.751,2.6099,2.4709,2.5767,1.9774,1.6387,1.2359,1.8849,1.5209,
@@ -827,15 +818,18 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     10.9052,11.2946,11.3139,10.9426,11.3779,11.5184,11.7603,12.1696,12.2812
   ];
 
+  // 2026 YTD data — injected from Google Drive via render.py (auto-updates daily)
   const _S = {"dates": ["2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-19", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-23", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-28", "2026-04-29", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09", "2026-07-10", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-09-03", "2026-09-04", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-09", "2026-11-10"], "cum_returns": [1.5601, 4.093, 3.7575, 4.4453, 4.9709, 6.4024, 5.9271, 4.272, 5.0716, 6.0501, 5.8935, 5.4238, 5.2729, 4.6075, 3.0921, 2.3541, 0.8108, 1.4874, 2.2702, 1.0121, 1.3979, 0.1677, -0.3243, -1.8396, -1.8788, -1.9235, 0.4697, 1.437, 1.9962, 4.0092, 4.4285, 4.0539, 5.0995, 5.1387, 3.2263, 1.3811, 1.6719, 1.1239, -1.1519, -7.5822, -6.2458, -3.3605, -4.4062, -5.1554, -5.3232, -4.367, -4.1713, -4.9933, -7.8618, -11.0266, -9.707, -7.2803, -8.0407, -6.4639, -7.0398, -6.3688, -4.7808, -5.2337, -5.8376, -6.3409, -6.2011, -1.7837, -2.8909, -2.1472, -1.6439, -0.7101, 0.6878, 1.7558, 1.6104, 2.7231, 2.5218, 3.8526, 4.5851, 3.6289, 4.887, 3.6737, 3.6737, 4.8311, 5.7482, 6.7435, 7.1013, 5.9886, 6.3017, 6.1507, 7.6661, 7.448, 7.8003, 6.9615, 6.9783, 6.0669, 4.9597, 5.4574, 5.3567, 4.8088, 4.2105, 4.1993, 3.1369, 2.1304, 1.711, 2.41, 2.8238, 0.1174, 0.2572, 0.8555, 0.5703, 0.1845, 0.6095, 1.0904, 0.9953, 2.3541, 2.0186, 3.8862, 4.5068, 5.0101, 4.1769, 4.669, 3.724, 4.0036, 4.4062, 4.3558, 4.121, 3.081, 3.3438, 3.6513, 2.9244, 2.231, 0.6766, 1.0177, -0.3523, 0.8835, -0.0503, -2.5106, -3.2319, -6.7043, -4.9765, -5.7202, -6.6764, -6.0277, -4.6802, -2.4435, -2.9412, -1.4314, -0.6263, -0.6654, -1.3196, -1.1351, -0.6486, -0.8387, 0.2684, -1.2749, -3.3158, -3.4053, -3.1537, -3.45, -3.0306, -1.1351, 0.0224, 0.1677, 1.8396, 2.4156, 2.4435, 2.1975, 3.6178, 1.8564, 2.3485, 2.1639, 2.2814, 0.3802, -0.0112, 1.2749, 1.2134, 1.9235, 1.5265, 0.6318, 1.5936, 0.7437, -0.7437, -0.1845, -0.4306, -0.5983, -1.1071, -2.1863, -2.8349, -1.9682, -1.6383, -1.9571, -2.7622, -2.9803, -3.7687, -3.8582, -4.669, -5.038, -4.6131, -5.5133, -5.3903, -2.779, -1.5545, -0.794, -1.3923, -1.4818, -1.2134, -1.834, -2.6169, -4.3447, -4.9653, -3.0977, -2.6672, -3.5227, -4.1434, -2.533]};
   const DATES_2026   = _S.dates;
   const CUM_2026_RAW = _S.cum_returns;
 
-  const n = CUM_TYPICAL.length;
-  const known = CUM_2026_RAW.length;
+  const n = CUM_TYPICAL.length; // 249
+  const known = CUM_2026_RAW.length; // 92
 
+  // Build full-length arrays
   const cum2026 = CUM_2026_RAW.concat(new Array(n - known).fill(null));
 
+  // Approximate month start tdoy for future days (after tdoy 93 = May 25)
   const MONTH_LABELS = {98:'Jun',119:'Jul',140:'Aug',161:'Sep',182:'Oct',202:'Nov',222:'Dec'};
   const futureLabels = Array.from({length: n - known}, (_, i) => {
     const tdoy = known + 2 + i;
@@ -902,10 +896,11 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
             callback: function(val, index) {
               const lbl = this.getLabelForValue(val);
               if (!lbl) return null;
+              // Real dates: show only the 1st of each month (yyyy-mm-01) or the first label
               if (lbl.match(/^\d{4}-\d{2}-\d{2}$/)) {
                 return (lbl.slice(8) === '01' || index === 0) ? lbl.slice(0, 7) : null;
               }
-              return lbl;
+              return lbl; // month name
             }
           },
           grid: {display: false}
