@@ -142,7 +142,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   <div class="header-top">
     <div>
       <h1>Market Regime</h1>
-      <div class="subtitle">2026 Nov 11 - 15:40</div>
+      <div class="subtitle">2026 Nov 19 - 13:32</div>
     </div>
   </div>
 </div>
@@ -155,6 +155,7 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 <div class='mc warn'><div class='mc-label'>MFI RSI</div><div class='mc-value'>54.0</div><div class='mc-sub'>Above Average</div></div>
 <div class='mc warn'><div class='mc-label'>A/D RSI</div><div class='mc-value'>50.4</div><div class='mc-sub'>Above Average</div></div>
 <div class='mc neu'><div class='mc-label'>Gap Divergence</div><div class='mc-value'>-4.2</div><div class='mc-sub'>Aligned</div></div>
+<div class='mc neu'><div class='mc-label'>Allocation</div><div class='mc-value'>50%</div><div class='mc-sub'>recommended</div></div>
 </div>
 
 <!-- ══ NHNL CHART ══ -->
@@ -168,6 +169,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     </div>
   </div>
   <div class="chart-wrap" style="height:320px;"><canvas id="nhnlChart"></canvas></div>
+</div>
+
+<!-- ══ A/D LINE CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
 </div>
 
 <!-- ══ BREADTH CHART ══ -->
@@ -245,6 +259,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 </div>
 
 
+<!-- ══ INDICATOR METRIC CARDS ══ -->
+<div class="metric-row">
+  <div class='mc neg'><div class='mc-label'>RSI 21D</div><div class='mc-value'>49.1</div><div class='mc-sub'>Mild Sideways Down</div></div>
+<div class='mc warn'><div class='mc-label'>Breadth % &gt; MA50</div><div class='mc-value'>44.3%</div><div class='mc-sub'>Below Average (44.3%)</div></div>
+<div class='mc pos'><div class='mc-label'>NHNL RSI</div><div class='mc-value'>64.4</div><div class='mc-sub'>Strong</div></div>
+<div class='mc warn'><div class='mc-label'>MFI RSI</div><div class='mc-value'>54.0</div><div class='mc-sub'>Above Average</div></div>
+<div class='mc warn'><div class='mc-label'>A/D RSI</div><div class='mc-value'>50.4</div><div class='mc-sub'>Above Average</div></div>
+<div class='mc neu'><div class='mc-label'>Gap Divergence</div><div class='mc-value'>-4.2</div><div class='mc-sub'>Aligned</div></div>
+<div class='mc neu'><div class='mc-label'>Allocation</div><div class='mc-value'>50%</div><div class='mc-sub'>recommended</div></div>
+</div>
+
+
+
 
 <!-- ══ RSI GAP CHART ══ -->
 <div class="section">
@@ -270,19 +297,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     </div>
   </div>
   <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
-</div>
-
-<!-- ══ MFI CHART ══ -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
-    <div style="display:flex;gap:6px;">
-      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
-      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
-    </div>
-  </div>
-  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
 </div>
 
 <div class="footer">
