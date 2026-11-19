@@ -849,26 +849,55 @@ def render_topbot_panel(regime):
     <div class="mc-sub">Washout ≤15d + A/D RSI crosses 50</div></div>
 </div>"""
 
+    def _pct(v):
+        return "—" if v is None else f"{v:+.1f}%".replace("-", "−")
+
+    edge_style = {
+        "Strong":   ("background:rgba(0,191,111,0.14);color:#0a7a4a;", "Strong"),
+        "Moderate": ("background:rgba(192,143,79,0.16);color:#8a5f26;", "Moderate"),
+        "Weak":     ("background:#eee;color:var(--dc-gray);", "Weak"),
+    }
+
     rows = ""
     for c in t["components"]:
-        v, th = c["value"], c["threshold"]
+        v, th, stt = c["value"], c["threshold"], c.get("stats")
         if c["hit"]:
             st, cls = "Triggered", "pos-t"
         elif v is not None and abs(v - th) <= max(abs(th) * 0.25, 5):
             st, cls = "Near", "warn-t"
         else:
             st, cls = "Not yet", ""
-        rows += (f'<tr><td>{c["label"]}</td><td class="tr fw">{_f(v)}</td>'
-                 f'<td class="tr">{"≤" if c["op"] == "<=" else "≥"} {_f(th)}</td><td class="tc {cls}">{st}</td></tr>')
+        if stt:
+            es, et = edge_style[stt["edge"]]
+            badge = f'<span class="s-pill" style="{es}">{et}</span>'
+            note = (f'20d avg <b>{_pct(stt["avg20"])}</b> · {stt["win20"]}% win · '
+                    f'40d DD {_pct(stt["dd40"])} · {stt["episodes"]} episodes')
+            if stt["edge"] == "Strong":
+                note = '<b style="color:#0a7a4a;">Works standalone.</b> ' + note
+        else:
+            badge, note = "—", "No trigger in history"
+        strong = bool(stt and stt["edge"] == "Strong")
+        row_style = ' style="background:rgba(0,191,111,0.06);box-shadow:inset 4px 0 0 #00BF6F;"' if strong else ""
+        if c["hit"]:
+            row_style = ' style="background:rgba(0,191,111,0.16);box-shadow:inset 4px 0 0 #00BF6F;"'
+        rows += (f'<tr{row_style}><td class="fw">{c["label"]}</td><td class="tr fw">{_f(v)}</td>'
+                 f'<td class="tr">{"≤" if c["op"] == "<=" else "≥"} {_f(th)}</td><td class="tc {cls}">{st}</td>'
+                 f'<td class="tc">{badge}</td><td style="font-size:12px;color:var(--dc-black);">{note}</td></tr>')
 
     table = f"""
 <table style="margin-bottom:16px;">
-  <thead><tr><th>Bottom Condition</th><th class="tr">Current</th><th class="tr">Threshold</th><th class="tc">Status</th></tr></thead>
+  <thead><tr><th>Bottom Condition</th><th class="tr">Current</th><th class="tr">Threshold</th><th class="tc">Status</th>
+  <th class="tc">Hist. Edge</th><th>Note — VNMIDCAP after trigger</th></tr></thead>
   <tbody>{rows}</tbody>
 </table>"""
-    note = ('<div class="mc-sub" style="margin-top:8px;">Backtest Nov 2022 – Nov 2026 (VNMIDCAP, 20-day forward return): '
-            'Bottom score ≥3 → avg +8.7%, 90% positive · Top divergence → avg −3.5%, 75% negative · Baseline: avg +1.1%, 55% positive. '
-            'Small sample (7–12 episodes); thresholds fitted in-sample.</div>')
+    bl, cs, ts = t.get("baseline") or {}, t.get("combo_stats") or {}, t.get("top_stats") or {}
+    note = ('<div class="mc-sub" style="margin-top:8px;">'
+            f'Stats recomputed daily on full history ({t["chart"]["dates"][0]} → {t["date"]}). '
+            f'Combo score ≥3: 20d avg {_pct(cs.get("avg20"))}, {cs.get("win20", "—")}% win · '
+            f'Top divergence: 20d avg {_pct(ts.get("avg20"))}, {100 - ts["win20"] if ts else "—"}% negative · '
+            f'Baseline: {_pct(bl.get("avg20"))}, {bl.get("win20", "—")}% win. '
+            'Green rows = strong standalone edge (≥85% win, ≥+6% avg). '
+            'Small sample (6–13 episodes); thresholds fitted in-sample.</div>')
     return cards + table + note
 
 

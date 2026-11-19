@@ -53,6 +53,33 @@ def _episodes(flags):
     return eps
 
 
+FWD = 20                   # forward horizon for per-condition stats
+DD_FWD = 40                # forward window for max drawdown
+
+
+def _cond_stats(flags, mid):
+    """Historical edge of one condition: forward VNMIDCAP return after trigger days."""
+    n = len(mid)
+    rets, dds = [], []
+    for i, f in enumerate(flags):
+        if f and i + FWD < n:
+            rets.append(mid[i + FWD] / mid[i] - 1)
+            w = mid[i + 1: i + 1 + DD_FWD]
+            dds.append(min(w) / mid[i] - 1)
+    if not rets:
+        return None
+    avg = sum(rets) / len(rets)
+    win = sum(r > 0 for r in rets) / len(rets)
+    if win >= 0.85 and avg >= 0.06:
+        edge = "Strong"
+    elif win >= 0.70:
+        edge = "Moderate"
+    else:
+        edge = "Weak"
+    return {"avg20": round(avg * 100, 1), "win20": round(win * 100), "dd40": round(sum(dds) / len(dds) * 100, 1),
+            "days": len(rets), "episodes": len(_episodes(flags)), "edge": edge}
+
+
 def compute_topbot(rows):
     rows = [r for r in rows if r.get("vnmidcap")]
     if len(rows) < HIGH_LOOKBACK:
@@ -93,10 +120,17 @@ def compute_topbot(rows):
 
     i = len(rows) - 1
     r = rows[i]
+    base_rets = [mid[j + FWD] / mid[j] - 1 for j in range(len(mid) - FWD)]
+    baseline = {"avg20": round(sum(base_rets) / len(base_rets) * 100, 1),
+                "win20": round(sum(x > 0 for x in base_rets) / len(base_rets) * 100)}
+
     components = []
     for k, label, f, op, th in BOTTOM_RULES:
         components.append({"key": k, "label": label, "value": r.get(f), "threshold": th,
-                           "op": op, "hit": bflags[i][k]})
+                           "op": op, "hit": bflags[i][k],
+                           "stats": _cond_stats([fl[k] for fl in bflags], mid)})
+    combo_stats = _cond_stats(bot_flag, mid)
+    top_stats = _cond_stats(top_flag, mid)
 
     # days since last signal episode (based on flags, not episode start)
     def _since(flags):
@@ -125,6 +159,9 @@ def compute_topbot(rows):
         "bottom_score": bscore[i],
         "bottom_min": BOTTOM_MIN_SCORE,
         "components": components,
+        "baseline": baseline,
+        "combo_stats": combo_stats,
+        "top_stats": top_stats,
         "top_signal": top_flag[i],
         "top_reasons": top_why[i],
         "confirm_signal": confirm[i],
