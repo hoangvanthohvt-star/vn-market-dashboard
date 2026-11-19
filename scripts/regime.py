@@ -630,6 +630,7 @@ if __name__ == "__main__":
         text = sys.stdin.read()
 
     interbank_6m_map = {}
+    ib_records = []
     if len(sys.argv) > 2:
         with open(sys.argv[2]) as f:
             ib_records = json.load(f)
@@ -637,4 +638,11 @@ if __name__ == "__main__":
 
     rows   = parse_doc(text)
     result = analyze(rows, interbank_6m_map)
+
+    # Interest Rate Regime (VNIBOR 6M level x 120-session direction, vs VNMIDCAP)
+    try:
+        from rate_regime import compute_rate_regime
+        result["rate_regime"] = compute_rate_regime(ib_records, rows)
+    except Exception as e:  # never break the daily run because of this panel
+        result["rate_regime"] = {"error": f"rate_regime failed: {e}"}
     print(json.dumps(result, ensure_ascii=False, indent=2))

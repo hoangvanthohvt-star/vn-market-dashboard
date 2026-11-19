@@ -901,6 +901,80 @@ def render_topbot_panel(regime):
     return cards + table + note
 
 
+def render_rate_regime_panel(regime):
+    """Interest Rate Regime panel (VNIBOR 6M level x 120-session direction, vs VNMIDCAP)."""
+    rr = regime.get("rate_regime") or {}
+    if not rr or rr.get("error"):
+        return f'<div class="mc-sub">Interest rate regime not available. {rr.get("error", "")}</div>'
+
+    c, st, regs, p = rr["current"], rr["stats"], rr["regimes"], rr["params"]
+    gap = p["gap"]
+
+    def _pct(v, d=1):
+        return "—" if v is None else f"{v:+.{d}f}%".replace("-", "−")
+
+    ch = c["chg120"]
+    if ch > gap:
+        dir_txt = "Rising (confirmed)"
+    elif ch < -gap:
+        dir_txt = "Falling (confirmed)"
+    else:
+        dir_txt = ("Rising" if c["direction"] == "up" else "Falling" if c["direction"] == "down" else "—") + \
+                  f" (held — inside ±{gap:.1f}pp gap)"
+    dir_cls = "neg" if c["direction"] == "up" else ("pos" if c["direction"] == "down" else "neu")
+    lvl_cls = "neg" if c["vnibor"] > p["high"] else ("pos" if c["vnibor"] < p["low"] else "warn")
+
+    cards = f"""
+<div class="metric-row" style="margin-bottom:14px;">
+  <div class="mc {c['cls']}"><div class="mc-label">Interest Rate Regime</div>
+    <div class="mc-value" style="font-size:22px;">{c['name']}</div>
+    <div class="mc-sub">Since {c['since'] or '—'}</div></div>
+  <div class="mc {lvl_cls}"><div class="mc-label">VNIBOR 6M</div>
+    <div class="mc-value">{c['vnibor']:.2f}%</div>
+    <div class="mc-sub">{c['date']} · bands &lt;{p['low']:.0f}% / &gt;{p['high']:.0f}%</div></div>
+  <div class="mc {dir_cls}"><div class="mc-label">Change vs {p['lookback']} sessions ago</div>
+    <div class="mc-value">{ch:+.2f}pp</div>
+    <div class="mc-sub">{dir_txt} · ref {c['ref_value']:.2f}% on {c['ref_date']}</div></div>
+  <div class="mc"><div class="mc-label">VNMIDCAP</div>
+    <div class="mc-value">{c['vnmid']:,.1f}</div>
+    <div class="mc-sub">{c['vnmid_date']}</div></div>
+</div>"""
+
+    trig = (f'<div class="mc-sub" style="margin:-4px 0 12px;font-size:12px;color:var(--dc-black);">'
+            f'<b>Direction triggers today:</b> rising confirmed if VNIBOR 6M &gt; {c["up_trigger"]:.2f}% · '
+            f'falling confirmed if VNIBOR 6M &lt; {c["down_trigger"]:.2f}% '
+            f'(120-session reference {c["ref_value"]:.2f}% ± {gap:.1f}pp; the reference moves daily).</div>')
+
+    rows = ""
+    for k in ["G", "C", "R", "E"]:
+        s, r = st.get(k, {}), regs[k]
+        hl = ' style="background:rgba(23,63,53,0.08);box-shadow:inset 4px 0 0 #173F35;"' if k == c["regime"] else ""
+        ann_cls = "pos-t" if (s.get("ann_ret") or 0) > 0 else "neg-t"
+        tag = ' <span class="s-pill" style="background:#173F35;color:#fff;">Now</span>' if k == c["regime"] else ""
+        rows += (f'<tr{hl}><td class="fw">{r["name"]}{tag}</td><td>{r["rule"]}</td>'
+                 f'<td class="tr">{s.get("days", 0):,} ({s.get("pct_time", 0)}%)</td>'
+                 f'<td class="tr {ann_cls}">{_pct(s.get("ann_ret"))}</td>'
+                 f'<td class="tr">{s.get("win60", "—")}%</td><td class="tr">{_pct(s.get("avg60"), 2)}</td></tr>')
+
+    table = f"""
+<table style="margin-bottom:12px;">
+  <thead><tr><th>Regime</th><th>Rule</th><th class="tr">Days (share)</th><th class="tr">VNMIDCAP ann. return</th>
+  <th class="tr">60d win rate</th><th class="tr">60d avg return</th></tr></thead>
+  <tbody>{rows}</tbody>
+</table>"""
+
+    sw = " → ".join(f'{s["date"][:7]} <b>{s["name"]}</b>' for s in rr.get("switches", [])[-6:])
+    d0 = rr["chart"]["dates"][0]
+    note = ('<div class="mc-sub" style="margin-top:4px;">'
+            f'<b>Recent regime changes:</b> {sw}<br>'
+            f'Direction = VNIBOR 6M minus its value {p["lookback"]} sessions earlier; a move beyond ±{gap:.1f}pp '
+            'sets the direction, inside the gap the previous direction is kept. '
+            f'Stats recomputed daily on VNMIDCAP since {d0} with the regime lagged one session. '
+            'VNMIDCAP is a price index (no dividends). Easing has a single episode (Mar–May 2023) — treat as indicative. '
+            'Rate shocks only: non-monetary sell-offs (2018, Covid 2020) happened under Good.</div>')
+    return cards + trig + table + note
+
+
 def main():
     snapshot = json.loads((DATA_DIR / "latest.json").read_text())
     tmpl     = TEMPLATE.read_text()
@@ -962,6 +1036,8 @@ def main():
         "{{chart_json}}":            chart_json,
         "{{topbot_panel}}":          render_topbot_panel(regime),
         "{{topbot_chart_json}}":     json.dumps((regime.get("topbot") or {}).get("chart", {})),
+        "{{rate_regime_panel}}":     render_rate_regime_panel(regime),
+        "{{rate_regime_chart_json}}": json.dumps((regime.get("rate_regime") or {}).get("chart", {})),
         "{{full_chart_json}}":       json.dumps(regime.get("full_history", hist)),
         "{{nhnl_chart_json}}":       json.dumps(snapshot.get("nhnl_chart", {})),
         "{{breadth_chart_json}}":    json.dumps(snapshot.get("breadth_chart", {})),
