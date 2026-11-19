@@ -149,7 +149,21 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 
 <!-- ══ METRIC CARDS (top) ══ -->
 <div class="metric-row">
-  {{regime_metric_cards}}
+  {{regime_metric_cards_no_alloc}}
+</div>
+
+<!-- ══ TOP / BOTTOM COMBO (VNMIDCAP) ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">Breadth Combo — VNMIDCAP Top / Bottom Zones</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setTbRange(1)" id="tbBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setTbRange(2)" id="tbBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setTbRange(3)" id="tbBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  {{topbot_panel}}
+  <div class="chart-wrap" style="height:340px;margin-top:14px;"><canvas id="tbChart"></canvas></div>
 </div>
 
 <!-- ══ NHNL CHART ══ -->
@@ -163,6 +177,19 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     </div>
   </div>
   <div class="chart-wrap" style="height:320px;"><canvas id="nhnlChart"></canvas></div>
+</div>
+
+<!-- ══ A/D LINE CHART ══ -->
+<div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
+    <div style="display:flex;gap:6px;">
+      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
+      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
+      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
+    </div>
+  </div>
+  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
 </div>
 
 <!-- ══ BREADTH CHART ══ -->
@@ -240,13 +267,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
 </div>
 
 
-<!-- ══ INDICATOR METRIC CARDS ══ -->
-<div class="metric-row">
-  {{regime_metric_cards}}
-</div>
-
-
-
 
 <!-- ══ RSI GAP CHART ══ -->
 <div class="section">
@@ -272,19 +292,6 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
     </div>
   </div>
   <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
-</div>
-
-<!-- ══ MFI CHART ══ -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-    <h2 style="margin:0;">VNIndex vs Advance-Decline Line (Absolute)</h2>
-    <div style="display:flex;gap:6px;">
-      <button onclick="setAdRange(1)" id="adBtn1Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">1Y</button>
-      <button onclick="setAdRange(2)" id="adBtn2Y" style="padding:4px 12px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">2Y</button>
-      <button onclick="setAdRange(3)" id="adBtn3Y" style="padding:4px 12px;border:1px solid #173F35;border-radius:4px;background:#173F35;color:#fff;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px;">3Y</button>
-    </div>
-  </div>
-  <div class="chart-wrap" style="height:300px;"><canvas id="adChart"></canvas></div>
 </div>
 
 <div class="footer">
@@ -976,5 +983,53 @@ tbody tr:hover{background:rgba(0,191,111,0.05);}
   };
 })();
 </script>
+<script>
+(function(){
+  const TB = {{topbot_chart_json}};
+  if(!TB||!TB.dates) return;
+  const ctx = document.getElementById('tbChart').getContext('2d');
+  const bset = new Set(TB.bottom_eps||[]), tset = new Set(TB.top_eps||[]), cset = new Set(TB.confirm_eps||[]);
+  function makeChart(start) {
+    const d = TB.dates.slice(start), m = TB.vnmidcap.slice(start), sc = TB.bottom_score.slice(start);
+    const mark = s => d.map((x,i) => s.has(x) ? m[i] : null);
+    return new Chart(ctx, {
+      data: { labels: d, datasets: [
+        {type:'line', label:'VNMIDCAP', data:m, borderColor:'#173F35', borderWidth:1.8, pointRadius:0, tension:0.1, yAxisID:'y', order:3},
+        {type:'line', label:'Bottom combo (score ≥3)', data:mark(bset), showLine:false, pointStyle:'circle', pointRadius:7, pointBackgroundColor:'#00BF6F', pointBorderColor:'#fff', pointBorderWidth:2, yAxisID:'y', order:1},
+        {type:'line', label:'Bottom confirmation', data:mark(cset), showLine:false, pointStyle:'rectRot', pointRadius:6, pointBackgroundColor:'#014ABD', pointBorderColor:'#fff', pointBorderWidth:2, yAxisID:'y', order:1},
+        {type:'line', label:'Top divergence', data:mark(tset), showLine:false, pointStyle:'triangle', rotation:180, pointRadius:8, pointBackgroundColor:'#FF0037', pointBorderColor:'#fff', pointBorderWidth:2, yAxisID:'y', order:1},
+        {type:'bar', label:'Bottom score', data:sc, backgroundColor:sc.map(v => v>=3 ? 'rgba(0,191,111,0.45)' : 'rgba(151,153,155,0.25)'), yAxisID:'y2', order:4, barPercentage:1, categoryPercentage:1},
+      ]},
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{position:'top', labels:{usePointStyle:true, padding:14, font:{family:'Manrope',size:11}}},
+          tooltip:{backgroundColor:'#173F35', titleFont:{family:'Manrope'}, bodyFont:{family:'Manrope'},
+            filter:i => i.raw !== null && !(i.dataset.type==='bar' && i.raw===0)}
+        },
+        scales:{
+          y:{position:'left', grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'Manrope',size:11}}, title:{display:true,text:'VNMIDCAP',font:{family:'Manrope',size:11}}},
+          y2:{position:'right', min:0, max:12, grid:{display:false}, ticks:{stepSize:1, font:{family:'Manrope',size:10}, callback:v => v<=6 ? v : ''}, title:{display:true,text:'Bottom score',font:{family:'Manrope',size:11}}},
+          x:{ticks:{font:{family:'Manrope',size:10}, maxRotation:45}, grid:{display:false}}
+        }
+      }
+    });
+  }
+  const TDY = 250;
+  let tbChart = makeChart(Math.max(0, TB.dates.length - 3*TDY));
+  window.setTbRange = function(years) {
+    tbChart.destroy();
+    tbChart = makeChart(Math.max(0, TB.dates.length - years*TDY));
+    ['1Y','2Y','3Y'].forEach(k => {
+      const btn = document.getElementById('tbBtn'+k), active = k === years+'Y';
+      btn.style.background = active ? '#173F35' : '#fff';
+      btn.style.color = active ? '#fff' : '';
+      btn.style.borderColor = active ? '#173F35' : '#ccc';
+    });
+  };
+})();
+</script>
+
 </body>
 </html>
