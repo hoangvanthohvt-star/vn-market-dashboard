@@ -890,67 +890,6 @@ def render_topbot_panel(regime):
   <th class="tc">Hist. Edge</th><th>Note — VNMIDCAP after trigger</th></tr></thead>
   <tbody>{rows}</tbody>
 </table>"""
-    # ── Top conditions table ──
-    op_sym = {"<=": "≤", ">=": "≥", "<": "<", ">": ">"}
-    top_edge_style = {
-        "Strong":   "background:rgba(255,0,55,0.10);color:var(--dc-red);",
-        "Moderate": "background:rgba(255,103,27,0.14);color:#b34a12;",
-        "Weak":     "background:#eee;color:var(--dc-gray);",
-    }
-
-    def _val(v, unit):
-        if v is None:
-            return "—"
-        if unit == "%":
-            return _pct(v)
-        txt = _f(v)
-        return f"{txt} pts" if unit == "pts" else txt
-
-    trows = ""
-    for c in t.get("top_components", []):
-        v, th, stt, unit = c["value"], c["threshold"], c.get("stats"), c.get("unit", "")
-        if c.get("gate"):
-            st, cls = ("At high", "neg-t") if c["hit"] else (f"{_pct(v)} away", "")
-        elif c["hit"]:
-            st, cls = "Triggered", "neg-t"
-        elif c["breadth_hit"]:
-            st, cls = "Breadth only", "warn-t"
-        elif v is not None and abs(v - th) <= max(abs(th) * 0.15, 5):
-            st, cls = "Near", "warn-t"
-        else:
-            st, cls = "Not yet", ""
-        if stt:
-            badge = f'<span class="s-pill" style="{top_edge_style[stt["edge"]]}">{stt["edge"]}</span>'
-            note = (f'20d avg <b>{_pct(stt["avg20"])}</b> · {stt["neg20"]}% down · '
-                    f'40d DD {_pct(stt["dd40"])} · {stt["episodes"]} episodes')
-            if c.get("gate"):
-                note = "Price filter only — no edge alone. " + note
-            elif stt["edge"] == "Strong":
-                note = '<b style="color:var(--dc-red);">Works standalone.</b> ' + note
-        else:
-            badge, note = "—", "No trigger in history"
-        tag = ('<span class="s-pill" style="background:var(--dc-dark);color:#fff;margin-left:6px;font-size:10px;">SIGNAL</span>'
-               if c.get("signal") and not c.get("gate") else "")
-        row_style = ""
-        if stt and stt["edge"] == "Strong" and not c.get("gate"):
-            row_style = ' style="background:rgba(255,0,55,0.05);box-shadow:inset 4px 0 0 var(--dc-red);"'
-        if c["hit"] and not c.get("gate"):
-            row_style = ' style="background:rgba(255,0,55,0.14);box-shadow:inset 4px 0 0 var(--dc-red);"'
-        th_txt = _pct(th) if unit == "%" else (f"{_f(th)} pts" if unit == "pts" else _f(th))
-        trows += (f'<tr{row_style}><td class="fw">{c["label"]}{tag}</td><td class="tr fw">{_val(v, unit)}</td>'
-                  f'<td class="tr">{op_sym[c["op"]]} {th_txt}</td><td class="tc {cls}">{st}</td>'
-                  f'<td class="tc">{badge}</td><td style="font-size:12px;color:var(--dc-black);">{note}</td></tr>')
-
-    top_table = f"""
-<table style="margin-bottom:8px;">
-  <thead><tr><th>Top Condition (only while near 60d high)</th><th class="tr">Current</th><th class="tr">Threshold</th><th class="tc">Status</th>
-  <th class="tc">Hist. Edge</th><th>Note — VNMIDCAP after trigger</th></tr></thead>
-  <tbody>{trows}</tbody>
-</table>
-<div class="mc-sub" style="margin-bottom:16px;">Top Divergence fires when price is within 3% of its 60d high AND any SIGNAL row is triggered.
-"Breadth only" = breadth already broken but price is off the high (usually after a top, not before).
-Overbought breadth (high %&gt;MA50, NHNL, A/D) is <b>not</b> a top signal — historically it led to further gains.</div>"""
-
     bl, cs, ts = t.get("baseline") or {}, t.get("combo_stats") or {}, t.get("top_stats") or {}
     note = ('<div class="mc-sub" style="margin-top:8px;">'
             f'Stats recomputed daily on full history ({t["chart"]["dates"][0]} → {t["date"]}). '
@@ -959,7 +898,7 @@ Overbought breadth (high %&gt;MA50, NHNL, A/D) is <b>not</b> a top signal — hi
             f'Baseline: {_pct(bl.get("avg20"))}, {bl.get("win20", "—")}% win. '
             'Highlighted rows = strong standalone edge (bottom: ≥85% win & ≥+6% avg; top: ≥75% down & ≤−3% avg). '
             'Small sample (6–13 episodes); thresholds fitted in-sample.</div>')
-    return cards + table + top_table + note
+    return cards + table + note
 
 
 def main():
