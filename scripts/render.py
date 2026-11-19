@@ -814,6 +814,64 @@ def render_phase_rows(phases):
 # Main render
 # ---------------------------------------------------------------------------
 
+def render_topbot_panel(regime):
+    """Breadth combo top/bottom signal panel (VNMIDCAP based)."""
+    t = regime.get("topbot") or {}
+    if not t or t.get("error"):
+        return '<div class="mc-sub">Top/bottom signal data not available.</div>'
+
+    def _f(v, d=1):
+        return "—" if v is None else (f"{v:,.0f}" if abs(v) >= 100 else f"{v:.{d}f}")
+
+    def _since(n):
+        return "—" if n is None else ("today" if n == 0 else f"{n}d ago")
+
+    score, need = t["bottom_score"], t["bottom_min"]
+    score_cls = "pos" if score >= need else ("warn" if score >= 2 else "neu")
+    top_cls = "neg" if t["top_signal"] else "neu"
+    top_txt = "ON" if t["top_signal"] else "OFF"
+    top_sub = " · ".join(t["top_reasons"]) if t["top_reasons"] else (
+        "Near 60d high" if t["near_high"] else f"{t['dist_hi60_pct']:+.1f}% from 60d high")
+
+    cards = f"""
+<div class="metric-row" style="margin-bottom:14px;">
+  <div class="mc {t['state_cls']}"><div class="mc-label">Signal State</div>
+    <div class="mc-value" style="font-size:18px;">{t['state']}</div>
+    <div class="mc-sub">VNMIDCAP {t['vnmidcap']:,.1f} · {t['date']}</div></div>
+  <div class="mc {score_cls}"><div class="mc-label">Bottom Score</div>
+    <div class="mc-value">{score}/6</div>
+    <div class="mc-sub">Bottom zone at ≥{need} · last: {_since(t['days_since_bottom'])}</div></div>
+  <div class="mc {top_cls}"><div class="mc-label">Top Divergence</div>
+    <div class="mc-value">{top_txt}</div>
+    <div class="mc-sub">{top_sub} · last: {_since(t['days_since_top'])}</div></div>
+  <div class="mc {'pos' if t['confirm_signal'] else 'neu'}"><div class="mc-label">Bottom Confirmation</div>
+    <div class="mc-value">{'ON' if t['confirm_signal'] else 'OFF'}</div>
+    <div class="mc-sub">Washout ≤15d + A/D RSI crosses 50</div></div>
+</div>"""
+
+    rows = ""
+    for c in t["components"]:
+        v, th = c["value"], c["threshold"]
+        if c["hit"]:
+            st, cls = "Triggered", "pos-t"
+        elif v is not None and abs(v - th) <= max(abs(th) * 0.25, 5):
+            st, cls = "Near", "warn-t"
+        else:
+            st, cls = "Not yet", ""
+        rows += (f'<tr><td>{c["label"]}</td><td class="tr fw">{_f(v)}</td>'
+                 f'<td class="tr">{"≤" if c["op"] == "<=" else "≥"} {_f(th)}</td><td class="tc {cls}">{st}</td></tr>')
+
+    table = f"""
+<table style="margin-bottom:16px;">
+  <thead><tr><th>Bottom Condition</th><th class="tr">Current</th><th class="tr">Threshold</th><th class="tc">Status</th></tr></thead>
+  <tbody>{rows}</tbody>
+</table>"""
+    note = ('<div class="mc-sub" style="margin-top:8px;">Backtest Nov 2022 – Nov 2026 (VNMIDCAP, 20-day forward return): '
+            'Bottom score ≥3 → avg +8.7%, 90% positive · Top divergence → avg −3.5%, 75% negative · Baseline: avg +1.1%, 55% positive. '
+            'Small sample (7–12 episodes); thresholds fitted in-sample.</div>')
+    return cards + table + note
+
+
 def main():
     snapshot = json.loads((DATA_DIR / "latest.json").read_text())
     tmpl     = TEMPLATE.read_text()
@@ -873,6 +931,8 @@ def main():
         "{{regime_metric_cards_no_alloc}}": render_metric_cards_no_alloc(regime),
         # Charts
         "{{chart_json}}":            chart_json,
+        "{{topbot_panel}}":          render_topbot_panel(regime),
+        "{{topbot_chart_json}}":     json.dumps((regime.get("topbot") or {}).get("chart", {})),
         "{{full_chart_json}}":       json.dumps(regime.get("full_history", hist)),
         "{{nhnl_chart_json}}":       json.dumps(snapshot.get("nhnl_chart", {})),
         "{{breadth_chart_json}}":    json.dumps(snapshot.get("breadth_chart", {})),

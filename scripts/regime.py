@@ -17,6 +17,9 @@ Divergence:
 import sys
 import json
 import re
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from topbot import compute_topbot
 
 
 # ---------------------------------------------------------------------------
@@ -615,6 +618,7 @@ def analyze(rows, interbank_6m_map=None):
         "scenarios":      scenarios,
         "bear_detail":    bear_detail,
         "phases":         phases,
+        "topbot":         compute_topbot(rows),
     }
 
 
